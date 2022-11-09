@@ -14,6 +14,7 @@ from torch.utils.data import DataLoader
 
 import os
 import time
+import json
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -131,6 +132,10 @@ class Exp_Informer(Exp_Basic):
         if not os.path.exists(path):
             os.makedirs(path)
 
+        # Save args
+        with open(os.path.join(path, "args.json"), 'w') as convert_file:
+            convert_file.write(json.dumps(self.args))
+
         time_now = time.time()
         
         train_steps = len(train_loader)
@@ -238,11 +243,12 @@ class Exp_Informer(Exp_Basic):
         self.model.eval()
         
         preds = []
-        
+        # pred_trues = []
         for i, (batch_x,batch_y,batch_x_mark,batch_y_mark) in enumerate(pred_loader):
             pred, true = self._process_one_batch(
                 pred_data, batch_x, batch_y, batch_x_mark, batch_y_mark)
             preds.append(pred.detach().cpu().numpy())
+            # pred_trues.append(true.detach().cpu().numpy())
 
         preds = np.array(preds)
         preds = preds.reshape(-1, preds.shape[-2], preds.shape[-1])
