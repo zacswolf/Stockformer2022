@@ -1,6 +1,6 @@
 **/__pycache__/
 .venv/
-
+.env
 
 checkpoints/
 data/ETT/
