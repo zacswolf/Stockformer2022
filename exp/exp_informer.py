@@ -192,7 +192,7 @@ class Exp_Informer(Exp_Basic):
 
             adjust_learning_rate(model_optim, epoch+1, self.args)
             
-        best_model_path = path+'/'+'checkpoint.pth'
+        best_model_path = os.path.join(path, 'checkpoint.pth')
         self.model.load_state_dict(torch.load(best_model_path))
         
         return self.model
@@ -219,16 +219,20 @@ class Exp_Informer(Exp_Basic):
         print('test shape:', preds.shape, trues.shape)
 
         # result save
-        folder_path = './results/' + setting +'/'
+        folder_path = os.path.join('./results/', setting)
         if not os.path.exists(folder_path):
             os.makedirs(folder_path)
+
+        # Save args
+        with open(os.path.join(folder_path, "args.json"), 'w') as convert_file:
+            convert_file.write(json.dumps(self.args))
 
         mae, mse, rmse, mape, mspe = metric(preds, trues)
         print('mse:{}, mae:{}'.format(mse, mae))
 
-        np.save(folder_path+'metrics.npy', np.array([mae, mse, rmse, mape, mspe]))
-        np.save(folder_path+'pred.npy', preds)
-        np.save(folder_path+'true.npy', trues)
+        np.save(os.path.join(folder_path, 'metrics.npy'), np.array([mae, mse, rmse, mape, mspe]))
+        np.save(os.path.join(folder_path, 'pred.npy'), preds)
+        np.save(os.path.join(folder_path, 'true.npy'), trues)
 
         return
 
@@ -237,7 +241,7 @@ class Exp_Informer(Exp_Basic):
         
         if load:
             path = os.path.join(self.args.checkpoints, setting)
-            best_model_path = path+'/'+'checkpoint.pth'
+            best_model_path = os.path.join(path, 'checkpoint.pth')
             self.model.load_state_dict(torch.load(best_model_path))
 
         self.model.eval()
@@ -254,11 +258,11 @@ class Exp_Informer(Exp_Basic):
         preds = preds.reshape(-1, preds.shape[-2], preds.shape[-1])
         
         # result save
-        folder_path = './results/' + setting +'/'
+        folder_path = os.path.join('./results/', setting)
         if not os.path.exists(folder_path):
             os.makedirs(folder_path)
         
-        np.save(folder_path+'real_prediction.npy', preds)
+        np.save(os.path.join(folder_path, 'real_prediction.npy'), preds)
         
         return
 
