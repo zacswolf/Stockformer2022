@@ -149,6 +149,7 @@ class Exp_Informer(Exp_Basic):
             preds.append(pred.detach().cpu().numpy())
             trues.append(true.detach().cpu().numpy())
 
+        assert preds.shape == trues.shape
         preds = np.array(preds)
         trues = np.array(trues)
         print('test shape:', preds.shape, trues.shape)
