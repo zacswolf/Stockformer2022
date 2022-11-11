@@ -6,3 +6,9 @@ checkpoints/
 data/ETT/
 data/old/
 results/
+
+layers2/
+models2/
+exp2/
+utils2/
+data_provider2/
