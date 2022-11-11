@@ -6,7 +6,7 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 # from sklearn.preprocessing import StandardScaler
 
-from utils.tools import StandardScaler
+from utils.tools import StandardScaler, dotdict
 from utils.timefeatures import time_features
 
 import warnings
@@ -186,42 +186,55 @@ class Dataset_ETT_minute(Dataset):
 
 
 class Dataset_Custom(Dataset):
-    def __init__(self, root_path, flag='train', size=None, 
-                 features='S', data_path='ETTh1.csv', 
-                 target='OT', scale=True, inverse=False, timeenc=0, freq='h', cols=None):
-        # size [seq_len, label_len, pred_len]
+    def __init__(self, config, flag='train', freq='h'):
+        # Default values
+        defaults = {"size":None, "features":'S', "target":'OT', "scale":True, 
+            "inverse":False, "timeenc":0, "cols":None, "date_cutoff": None,
+        }
+        config = dotdict({**defaults, **config})
+
         # info
-        if size == None:
-            self.seq_len = 24*4*4
-            self.label_len = 24*4
-            self.pred_len = 24*4
-        else:
-            self.seq_len = size[0]
-            self.label_len = size[1]
-            self.pred_len = size[2]
+        assert config.seq_len is not None
+        assert config.label_len is not None
+        assert config.pred_len is not None
+        self.seq_len = config.seq_len # 24*4*4
+        self.label_len = config.label_len # 24*4
+        self.pred_len = config.pred_len # 24*4
         # init
         assert flag in ['train', 'test', 'val']
         type_map = {'train':0, 'val':1, 'test':2}
         self.set_type = type_map[flag]
         
-        self.features = features
-        self.target = target
-        self.scale = scale
-        self.inverse = inverse
-        self.timeenc = timeenc
+        self.features = config.features #if config.features is not None else "S"
+        self.target = config.target #if config.target is not None else "OT"
+        self.scale = config.scale #if config.scale is not None else True
+        self.inverse = config.inverse #if config.inverse is not None else False
+        self.timeenc = config.timeenc #if config.timeenc is not None else 0
+        assert freq is not None
         self.freq = freq
-        self.cols=cols
-        self.root_path = root_path
-        self.data_path = data_path
+        self.cols = config.cols #if config.cols is not None else None
+
+        assert config.root_path is not None
+        self.root_path = config.root_path
+        assert config.data_path is not None
+        self.data_path = config.data_path
+
+        self.date_cutoff = config.date_cutoff# None if config.date_cutoff is None else pd.to_datetime(config.date_cutoff)
+
         self.__read_data__()
 
     def __read_data__(self):
         self.scaler = StandardScaler()
         df_raw = pd.read_csv(os.path.join(self.root_path,
                                           self.data_path))
+        df_raw['date'] = pd.to_datetime(df_raw["date"])
         '''
         df_raw.columns: ['date', ...(other features), target feature]
         '''
+        # Filter to datapoints after certain date_cutoff
+        if self.date_cutoff is not None:
+            df_raw = df_raw.loc[(df_raw['date'] >= self.date_cutoff)]
+
         if self.cols:
             cols=self.cols.copy()
             cols.remove(self.target)
@@ -288,40 +301,53 @@ class Dataset_Custom(Dataset):
         return self.scaler.inverse_transform(data)
 
 class Dataset_Pred(Dataset):
-    def __init__(self, root_path, flag='pred', size=None, 
-                 features='S', data_path='ETTh1.csv', 
-                 target='OT', scale=True, inverse=False, timeenc=0, freq='15min', cols=None):
-        # size [seq_len, label_len, pred_len]
+    def __init__(self, config, flag='pred', freq='15min'):
+        # Default values
+        defaults = {"size":None, "features":'S', "target":'OT', "scale":True, 
+            "inverse":False, "timeenc":0, "cols":None, "date_cutoff": None,
+        }
+        config = dotdict({**defaults, **config})
+
         # info
-        if size == None:
-            self.seq_len = 24*4*4
-            self.label_len = 24*4
-            self.pred_len = 24*4
-        else:
-            self.seq_len = size[0]
-            self.label_len = size[1]
-            self.pred_len = size[2]
+        assert config.seq_len is not None
+        assert config.label_len is not None
+        assert config.pred_len is not None
+        self.seq_len = config.seq_len # 24*4*4
+        self.label_len = config.label_len # 24*4
+        self.pred_len = config.pred_len # 24*4
         # init
         assert flag in ['pred']
         
-        self.features = features
-        self.target = target
-        self.scale = scale
-        self.inverse = inverse
-        self.timeenc = timeenc
+        self.features = config.features #if config.features is not None else "S"
+        self.target = config.target #if config.target is not None else "OT"
+        self.scale = config.scale #if config.scale is not None else True
+        self.inverse = config.inverse #if config.inverse is not None else False
+        self.timeenc = config.timeenc #if config.timeenc is not None else 0
+        assert freq is not None
         self.freq = freq
-        self.cols=cols
-        self.root_path = root_path
-        self.data_path = data_path
+        self.cols = config.cols #if config.cols is not None else None
+ 
+        assert config.root_path is not None
+        self.root_path = config.root_path
+        assert config.data_path is not None
+        self.data_path = config.data_path
+
+        self.date_cutoff = config.date_cutoff# None if config.date_cutoff is None else pd.to_datetime(config.date_cutoff)
         self.__read_data__()
 
     def __read_data__(self):
         self.scaler = StandardScaler()
         df_raw = pd.read_csv(os.path.join(self.root_path,
                                           self.data_path))
+        df_stamp['date'] = pd.to_datetime(df_stamp.date)
         '''
         df_raw.columns: ['date', ...(other features), target feature]
         '''
+
+        # Filter to datapoints after certain date_cutoff
+        if self.date_cutoff is not None:
+            df_raw = df_raw.loc[(df_raw['date'] >= self.date_cutoff)]
+
         if self.cols:
             cols=self.cols.copy()
             cols.remove(self.target)
