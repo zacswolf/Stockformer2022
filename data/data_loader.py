@@ -186,81 +186,95 @@ class Dataset_ETT_minute(Dataset):
 
 
 class Dataset_Custom(Dataset):
-    def __init__(self, config, flag='train', freq='h'):
+    def __init__(self, config, flag='train', freq='h', timeenc=0):
         # Default values
         defaults = {"size":None, "features":'S', "target":'OT', "scale":True, 
-            "inverse":False, "timeenc":0, "cols":None, "date_cutoff": None,
+            "inverse":False, "cols":None, "date_cutoff": None,
         }
         config = dotdict({**defaults, **config})
 
-        # info
         assert config.seq_len is not None
         assert config.label_len is not None
         assert config.pred_len is not None
-        self.seq_len = config.seq_len # 24*4*4
-        self.label_len = config.label_len # 24*4
-        self.pred_len = config.pred_len # 24*4
-        # init
+        assert freq is not None
         assert flag in ['train', 'test', 'val']
+        assert config.root_path is not None
+        self.config = config
+
+        self.freq = freq
+        self.timeenc = timeenc
+
         type_map = {'train':0, 'val':1, 'test':2}
         self.set_type = type_map[flag]
+
+        # # info
+        # assert config.seq_len is not None
+        # assert config.label_len is not None
+        # assert config.pred_len is not None
+        # self.seq_len = config.seq_len # 24*4*4
+        # self.label_len = config.label_len # 24*4
+        # self.pred_len = config.pred_len # 24*4
+        # # init
+        # assert flag in ['train', 'test', 'val']
+        # type_map = {'train':0, 'val':1, 'test':2}
+        # self.set_type = type_map[flag]
         
-        self.features = config.features #if config.features is not None else "S"
-        self.target = config.target #if config.target is not None else "OT"
-        self.scale = config.scale #if config.scale is not None else True
-        self.inverse = config.inverse #if config.inverse is not None else False
-        self.timeenc = config.timeenc #if config.timeenc is not None else 0
-        assert freq is not None
-        self.freq = freq
-        self.cols = config.cols #if config.cols is not None else None
+        # self.features = config.features #if config.features is not None else "S"
+        # self.target = config.target #if config.target is not None else "OT"
+        # self.scale = config.scale #if config.scale is not None else True
+        # self.inverse = config.inverse #if config.inverse is not None else False
+        # self.timeenc = timeenc 
+        # assert freq is not None
+        # self.freq = freq
+        # self.cols = config.cols #if config.cols is not None else None
 
-        assert config.root_path is not None
-        self.root_path = config.root_path
-        assert config.data_path is not None
-        self.data_path = config.data_path
+        # assert config.root_path is not None
+        # self.root_path = config.root_path
+        # assert config.data_path is not None
+        # self.data_path = config.data_path
 
-        self.date_cutoff = config.date_cutoff# None if config.date_cutoff is None else pd.to_datetime(config.date_cutoff)
+        # self.date_cutoff = config.date_cutoff# None if config.date_cutoff is None else pd.to_datetime(config.date_cutoff)
 
         self.__read_data__()
 
     def __read_data__(self):
         self.scaler = StandardScaler()
-        df_raw = pd.read_csv(os.path.join(self.root_path,
-                                          self.data_path))
+        df_raw = pd.read_csv(os.path.join(self.config.root_path,
+                                          self.config.data_path))
         df_raw['date'] = pd.to_datetime(df_raw["date"])
         '''
         df_raw.columns: ['date', ...(other features), target feature]
         '''
         # Filter to datapoints after certain date_cutoff
-        if self.date_cutoff is not None:
-            df_raw = df_raw.loc[(df_raw['date'] >= self.date_cutoff)]
+        if self.config.date_cutoff is not None:
+            df_raw = df_raw.loc[(df_raw['date'] >= self.config.date_cutoff)]
 
-        if self.cols:
-            cols=self.cols.copy()
-            cols.remove(self.target)
+        if self.config.cols:
+            cols=self.config.cols.copy()
+            cols.remove(self.config.target)
         else:
             cols = list(df_raw.columns)
-            assert self.target in cols, "Target not in data"
-            cols.remove(self.target)
+            assert self.config.target in cols, "Target not in data"
+            cols.remove(self.config.target)
             assert 'date' in cols, "`date` not in data"
             cols.remove('date')
-        df_raw = df_raw[['date']+cols+[self.target]]
+        df_raw = df_raw[['date']+cols+[self.config.target]]
 
         num_train = int(len(df_raw)*0.7)
         num_test = int(len(df_raw)*0.2)
         num_vali = len(df_raw) - num_train - num_test
-        border1s = [0, num_train-self.seq_len, len(df_raw)-num_test-self.seq_len]
+        border1s = [0, num_train-self.config.seq_len, len(df_raw)-num_test-self.config.seq_len]
         border2s = [num_train, num_train+num_vali, len(df_raw)]
         border1 = border1s[self.set_type]
         border2 = border2s[self.set_type]
         
-        if self.features=='M' or self.features=='MS':
+        if self.config.features=='M' or self.config.features=='MS':
             cols_data = df_raw.columns[1:]
             df_data = df_raw[cols_data]
-        elif self.features=='S':
-            df_data = df_raw[[self.target]]
+        elif self.config.features=='S':
+            df_data = df_raw[[self.config.target]]
 
-        if self.scale:
+        if self.config.scale:
             train_data = df_data[border1s[0]:border2s[0]]
             self.scaler.fit(train_data.values)
             data = self.scaler.transform(df_data.values)
@@ -272,7 +286,7 @@ class Dataset_Custom(Dataset):
         data_stamp = time_features(df_stamp, timeenc=self.timeenc, freq=self.freq)
 
         self.data_x = data[border1:border2]
-        if self.inverse:
+        if self.config.inverse:
             self.data_y = df_data.values[border1:border2]
         else:
             self.data_y = data[border1:border2]
@@ -280,13 +294,13 @@ class Dataset_Custom(Dataset):
     
     def __getitem__(self, index):
         s_begin = index
-        s_end = s_begin + self.seq_len
-        r_begin = s_end - self.label_len 
-        r_end = r_begin + self.label_len + self.pred_len
+        s_end = s_begin + self.config.seq_len
+        r_begin = s_end - self.config.label_len 
+        r_end = r_begin + self.config.label_len + self.config.pred_len
 
         seq_x = self.data_x[s_begin:s_end]
-        if self.inverse:
-            seq_y = np.concatenate([self.data_x[r_begin:r_begin+self.label_len], self.data_y[r_begin+self.label_len:r_end]], 0)
+        if self.config.inverse:
+            seq_y = np.concatenate([self.data_x[r_begin:r_begin+self.config.label_len], self.data_y[r_begin+self.config.label_len:r_end]], 0)
         else:
             seq_y = self.data_y[r_begin:r_end]
         seq_x_mark = self.data_stamp[s_begin:s_end]
@@ -295,76 +309,86 @@ class Dataset_Custom(Dataset):
         return seq_x, seq_y, seq_x_mark, seq_y_mark
     
     def __len__(self):
-        return len(self.data_x) - self.seq_len- self.pred_len + 1
+        return len(self.data_x) - self.config.seq_len- self.config.pred_len + 1
 
     def inverse_transform(self, data):
         return self.scaler.inverse_transform(data)
 
 class Dataset_Pred(Dataset):
-    def __init__(self, config, flag='pred', freq='15min'):
+    def __init__(self, config, flag='pred', freq='15min', timeenc=0):
         # Default values
         defaults = {"size":None, "features":'S', "target":'OT', "scale":True, 
-            "inverse":False, "timeenc":0, "cols":None, "date_cutoff": None,
+            "inverse":False, "cols":None, "date_cutoff": None,
         }
         config = dotdict({**defaults, **config})
 
-        # info
         assert config.seq_len is not None
         assert config.label_len is not None
         assert config.pred_len is not None
-        self.seq_len = config.seq_len # 24*4*4
-        self.label_len = config.label_len # 24*4
-        self.pred_len = config.pred_len # 24*4
-        # init
         assert flag in ['pred']
-        
-        self.features = config.features #if config.features is not None else "S"
-        self.target = config.target #if config.target is not None else "OT"
-        self.scale = config.scale #if config.scale is not None else True
-        self.inverse = config.inverse #if config.inverse is not None else False
-        self.timeenc = config.timeenc #if config.timeenc is not None else 0
-        assert freq is not None
-        self.freq = freq
-        self.cols = config.cols #if config.cols is not None else None
- 
         assert config.root_path is not None
-        self.root_path = config.root_path
         assert config.data_path is not None
-        self.data_path = config.data_path
 
-        self.date_cutoff = config.date_cutoff# None if config.date_cutoff is None else pd.to_datetime(config.date_cutoff)
+        self.config = config
+
+        self.freq = freq
+        self.timeenc = timeenc
+
+        # info
+        
+        # self.seq_len = config.seq_len # 24*4*4
+        # self.label_len = config.label_len # 24*4
+        # self.pred_len = config.pred_len # 24*4
+        # # init
+        # assert flag in ['pred']
+        
+        # self.features = config.features #if config.features is not None else "S"
+        # self.target = config.target #if config.target is not None else "OT"
+        # self.scale = config.scale #if config.scale is not None else True
+        # self.inverse = config.inverse #if config.inverse is not None else False
+        # self.timeenc = timeenc #if timeenc is not None else 0
+        # assert freq is not None
+        # self.freq = freq
+        # self.cols = config.cols #if config.cols is not None else None
+ 
+        # assert config.root_path is not None
+        # self.root_path = config.root_path
+        # assert config.data_path is not None
+        # self.data_path = config.data_path
+
+        # self.date_cutoff = config.date_cutoff# None if config.date_cutoff is None else pd.to_datetime(config.date_cutoff)
         self.__read_data__()
 
     def __read_data__(self):
         self.scaler = StandardScaler()
-        df_raw = pd.read_csv(os.path.join(self.root_path,
-                                          self.data_path))
+        df_raw = pd.read_csv(os.path.join(self.config.root_path,
+                                          self.config.data_path))
         df_stamp['date'] = pd.to_datetime(df_stamp.date)
         '''
         df_raw.columns: ['date', ...(other features), target feature]
         '''
 
         # Filter to datapoints after certain date_cutoff
-        if self.date_cutoff is not None:
-            df_raw = df_raw.loc[(df_raw['date'] >= self.date_cutoff)]
+        if self.config.date_cutoff is not None:
+            df_raw = df_raw.loc[(df_raw['date'] >= self.config.date_cutoff)]
 
-        if self.cols:
-            cols=self.cols.copy()
-            cols.remove(self.target)
+        if self.config.cols:
+            cols=self.config.cols.copy()
+            cols.remove(self.config.target)
         else:
-            cols = list(df_raw.columns); cols.remove(self.target); cols.remove('date')
-        df_raw = df_raw[['date']+cols+[self.target]]
+            cols = list(df_raw.columns); cols.remove(self.config.target); cols.remove('date')
+        df_raw = df_raw[['date']+cols+[self.config.target]]
         
-        border1 = len(df_raw)-self.seq_len
+        border1 = len(df_raw)-self.config.seq_len
         border2 = len(df_raw)
         
-        if self.features=='M' or self.features=='MS':
+        if self.config.features=='M' or self.config.features=='MS':
             cols_data = df_raw.columns[1:]
             df_data = df_raw[cols_data]
-        elif self.features=='S':
-            df_data = df_raw[[self.target]]
+        elif self.config.features=='S':
+            df_data = df_raw[[self.config.target]]
 
-        if self.scale:
+        if self.config.scale:
             self.scaler.fit(df_data.values)
             data = self.scaler.transform(df_data.values)
         else:
@@ -372,14 +396,14 @@ class Dataset_Pred(Dataset):
             
         tmp_stamp = df_raw[['date']][border1:border2]
         tmp_stamp['date'] = pd.to_datetime(tmp_stamp.date)
-        pred_dates = pd.date_range(tmp_stamp.date.values[-1], periods=self.pred_len+1, freq=self.freq)
+        pred_dates = pd.date_range(tmp_stamp.date.values[-1], periods=self.config.pred_len+1, freq=self.freq)
         
         df_stamp = pd.DataFrame(columns = ['date'])
         df_stamp.date = list(tmp_stamp.date.values) + list(pred_dates[1:])
         data_stamp = time_features(df_stamp, timeenc=self.timeenc, freq=self.freq[-1:])
 
         self.data_x = data[border1:border2]
-        if self.inverse:
+        if self.config.inverse:
             self.data_y = df_data.values[border1:border2]
         else:
             self.data_y = data[border1:border2]
@@ -387,22 +411,22 @@ class Dataset_Pred(Dataset):
     
     def __getitem__(self, index):
         s_begin = index
-        s_end = s_begin + self.seq_len
-        r_begin = s_end - self.label_len
-        r_end = r_begin + self.label_len + self.pred_len
+        s_end = s_begin + self.config.seq_len
+        r_begin = s_end - self.config.label_len
+        r_end = r_begin + self.config.label_len + self.config.pred_len
 
         seq_x = self.data_x[s_begin:s_end]
-        if self.inverse:
-            seq_y = self.data_x[r_begin:r_begin+self.label_len]
+        if self.config.inverse:
+            seq_y = self.data_x[r_begin:r_begin+self.config.label_len]
         else:
-            seq_y = self.data_y[r_begin:r_begin+self.label_len]
+            seq_y = self.data_y[r_begin:r_begin+self.config.label_len]
         seq_x_mark = self.data_stamp[s_begin:s_end]
         seq_y_mark = self.data_stamp[r_begin:r_end]
 
         return seq_x, seq_y, seq_x_mark, seq_y_mark
     
     def __len__(self):
-        return len(self.data_x) - self.seq_len + 1
+        return len(self.data_x) - self.config.seq_len + 1
 
     def inverse_transform(self, data):
         return self.scaler.inverse_transform(data)

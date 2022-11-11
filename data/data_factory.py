@@ -34,7 +34,7 @@ def data_provider(args, flag):
         batch_size = args.batch_size
         freq = args.freq
 
-    data_set = Data(args, flag=flag, freq=freq)
+    data_set = Data(args, flag=flag, freq=freq, timeenc=timeenc)
     #     root_path=args.root_path,
     #     data_path=args.data_path,
     #     flag=flag,
