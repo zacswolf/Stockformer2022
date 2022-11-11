@@ -1,6 +1,6 @@
-from data.data_loader import Dataset_ETT_hour, Dataset_ETT_minute, Dataset_Custom, Dataset_Pred
+from data.data_factory import data_provider
 from exp.exp_basic import Exp_Basic
-from models.model import Informer, InformerStack
+from models.Informer import Informer, InformerStack
 
 from utils.tools import EarlyStopping, adjust_learning_rate
 from utils.metrics import metric
@@ -10,7 +10,6 @@ import numpy as np
 import torch
 import torch.nn as nn
 from torch import optim
-from torch.utils.data import DataLoader
 
 import os
 import time
@@ -28,79 +27,18 @@ class Exp_Informer(Exp_Basic):
             'informer':Informer,
             'informerstack':InformerStack,
         }
-        if self.args.model=='informer' or self.args.model=='informerstack':
-            e_layers = self.args.e_layers if self.args.model=='informer' else self.args.s_layers
-            model = model_dict[self.args.model](
-                self.args.enc_in,
-                self.args.dec_in, 
-                self.args.c_out, 
-                self.args.seq_len, 
-                self.args.label_len,
-                self.args.pred_len, 
-                self.args.factor,
-                self.args.d_model, 
-                self.args.n_heads, 
-                e_layers, # self.args.e_layers,
-                self.args.d_layers, 
-                self.args.d_ff,
-                self.args.dropout, 
-                self.args.attn,
-                self.args.embed,
-                self.args.freq,
-                self.args.activation,
-                self.args.output_attention,
-                self.args.distil,
-                self.args.mix,
-                self.device
-            ).float()
+
+        # Use stack layers for encoder layers if using informerstack
+        self.args.e_layers = self.args.s_layers if self.args.model=='informerstack' else self.args.e_layers
+        
+        model = model_dict[self.args.model](self.args).float()
         
         if self.args.use_multi_gpu and self.args.use_gpu:
             model = nn.DataParallel(model, device_ids=self.args.device_ids)
         return model
 
     def _get_data(self, flag):
-        args = self.args
-
-        data_dict = {
-            'ETTh1':Dataset_ETT_hour,
-            'ETTh2':Dataset_ETT_hour,
-            'ETTm1':Dataset_ETT_minute,
-            'ETTm2':Dataset_ETT_minute,
-            'WTH':Dataset_Custom,
-            'ECL':Dataset_Custom,
-            'Solar':Dataset_Custom,
-            'custom':Dataset_Custom,
-        }
-        Data = data_dict[self.args.data]
-        timeenc = 0 if args.embed!='timeF' else 1
-
-        if flag == 'test':
-            shuffle_flag = False; drop_last = True; batch_size = args.batch_size; freq=args.freq
-        elif flag=='pred':
-            shuffle_flag = False; drop_last = False; batch_size = 1; freq=args.detail_freq
-            Data = Dataset_Pred
-        else:
-            shuffle_flag = True; drop_last = True; batch_size = args.batch_size; freq=args.freq
-        data_set = Data(
-            root_path=args.root_path,
-            data_path=args.data_path,
-            flag=flag,
-            size=[args.seq_len, args.label_len, args.pred_len],
-            features=args.features,
-            target=args.target,
-            inverse=args.inverse,
-            timeenc=timeenc,
-            freq=freq,
-            cols=args.cols
-        )
-        print(flag, len(data_set))
-        data_loader = DataLoader(
-            data_set,
-            batch_size=batch_size,
-            shuffle=shuffle_flag,
-            num_workers=args.num_workers,
-            drop_last=drop_last)
-
+        data_set, data_loader = data_provider(self.args, flag)
         return data_set, data_loader
 
     def _select_optimizer(self):
@@ -274,6 +212,7 @@ class Exp_Informer(Exp_Basic):
         batch_y_mark = batch_y_mark.float().to(self.device)
 
         # decoder input
+        # FF: dec_inp = torch.zeros_like(batch_y[:, -self.args.pred_len:, :]).float()
         if self.args.padding==0:
             dec_inp = torch.zeros([batch_y.shape[0], self.args.pred_len, batch_y.shape[-1]]).float()
         elif self.args.padding==1:
