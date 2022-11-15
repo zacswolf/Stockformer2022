@@ -189,7 +189,7 @@ class Dataset_Custom(Dataset):
     def __init__(self, config, flag='train', freq='h', timeenc=0):
         # Default values
         defaults = {"size":None, "features":'S', "target":'OT', "scale":True, 
-            "inverse":False, "cols":None, "date_cutoff": None,
+            "inverse":False, "cols":None, "date_cutoff": None, "date_test": None
         }
         config = dotdict({**defaults, **config})
 
@@ -199,6 +199,7 @@ class Dataset_Custom(Dataset):
         assert freq is not None
         assert flag in ['train', 'test', 'val']
         assert config.root_path is not None
+
         self.config = config
 
         self.freq = freq
@@ -260,9 +261,15 @@ class Dataset_Custom(Dataset):
             cols.remove('date')
         df_raw = df_raw[['date']+cols+[self.config.target]]
 
-        num_train = int(len(df_raw)*0.7)
-        num_test = int(len(df_raw)*0.2)
-        num_vali = len(df_raw) - num_train - num_test
+        if self.config.test_date is None:
+            num_train = int(len(df_raw)*0.7)
+            num_test = int(len(df_raw)*0.2)
+            num_vali = len(df_raw) - num_train - num_test
+        else:
+            num_test = len(df_raw.loc[(df_raw['date'] >= self.config.date_test)])
+            num_vali = num_test//2
+            num_train = len(df_raw) - num_vali - num_test
+
         border1s = [0, num_train-self.config.seq_len, len(df_raw)-num_test-self.config.seq_len]
         border2s = [num_train, num_train+num_vali, len(df_raw)]
         border1 = border1s[self.set_type]
@@ -363,7 +370,6 @@ class Dataset_Pred(Dataset):
         self.scaler = StandardScaler()
         df_raw = pd.read_csv(os.path.join(self.config.root_path,
                                           self.config.data_path))
-        df_stamp['date'] = pd.to_datetime(df_stamp.date)
         '''
         df_raw.columns: ['date', ...(other features), target feature]
         '''

@@ -149,7 +149,7 @@ class Exp_Informer(Exp_Basic):
             preds.append(pred.detach().cpu().numpy())
             trues.append(true.detach().cpu().numpy())
 
-        assert preds.shape == trues.shape
+        assert len(preds) == len(trues)
         preds = np.array(preds)
         trues = np.array(trues)
         print('test shape:', preds.shape, trues.shape)
@@ -157,7 +157,7 @@ class Exp_Informer(Exp_Basic):
         trues = trues.reshape(-1, trues.shape[-2], trues.shape[-1])
         print('test shape:', preds.shape, trues.shape)
 
-        # result save
+        # Result save
         folder_path = os.path.join('./results/', setting)
         if not os.path.exists(folder_path):
             os.makedirs(folder_path)
@@ -169,7 +169,12 @@ class Exp_Informer(Exp_Basic):
         mae, mse, rmse, mape, mspe = metric(preds, trues)
         print('mse:{}, mae:{}'.format(mse, mae))
 
+        # Save metrics
+        with open(os.path.join(folder_path, "results.txt"), 'a') as f:
+            f.write(f"{setting}\nmse:{mse}, mae:{mae}\n\n")
         np.save(os.path.join(folder_path, 'metrics.npy'), np.array([mae, mse, rmse, mape, mspe]))
+
+        # Save pred & true
         np.save(os.path.join(folder_path, 'pred.npy'), preds)
         np.save(os.path.join(folder_path, 'true.npy'), trues)
 
