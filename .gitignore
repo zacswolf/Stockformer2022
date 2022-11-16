@@ -2,10 +2,11 @@
 .venv/
 .env
 
-checkpoints/
-data/ETT/
-data/old/
-results/
+checkpoints
+data/ETT
+data/old
+data/raw
+results
 
 layers2/
 models2/

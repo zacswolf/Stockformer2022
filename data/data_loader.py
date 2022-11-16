@@ -252,6 +252,7 @@ class Dataset_Custom(Dataset):
 
         if self.config.cols:
             cols=self.config.cols.copy()
+            assert self.config.target in cols, "Target not in cols"
             cols.remove(self.config.target)
         else:
             cols = list(df_raw.columns)

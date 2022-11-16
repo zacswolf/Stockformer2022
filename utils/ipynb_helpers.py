@@ -56,7 +56,7 @@ def write_df(data, out_file, append=""):
         data_old = "data/old"
         if not os.path.exists(data_old):
             os.makedirs(data_old)
-        new_file_name = f"{out_file[:out_file.rfind('.')].replace('/','_')}_{datetime.datetime.now().strftime('%d_%m_%Y_%H_%M_%S')}{out_file[out_file.rfind('.'):]}"
+        new_file_name = f"{out_file[:out_file.rfind('.')].replace('./','').replace('/','_')}_{datetime.datetime.now().strftime('%d_%m_%Y_%H_%M_%S')}{out_file[out_file.rfind('.'):]}"
         os.rename(out_file, os.path.join(data_old, new_file_name))
 
     data.to_csv(out_file)
@@ -74,7 +74,7 @@ def read_data(out_file="realdata.csv"):
     return data
 
 def convert_tz(data, time_zone='US/Eastern'):
-    t = data.index.to_series(keep_tz=True)
+    t = data.index.to_series()
     t = t.dt.tz_convert(time_zone)
     data.index = t
     return data
