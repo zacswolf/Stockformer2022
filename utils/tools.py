@@ -4,6 +4,7 @@ import os
 
 def adjust_learning_rate(optimizer, epoch, args):
     # lr = args.learning_rate * (0.2 ** (epoch // 2))
+    lr_adjust = {}
     if args.lradj=='type1':
         lr_adjust = {epoch: args.learning_rate * (0.5 ** ((epoch-1) // 1))}
     elif args.lradj=='type2':
@@ -15,7 +16,7 @@ def adjust_learning_rate(optimizer, epoch, args):
         lr = lr_adjust[epoch]
         for param_group in optimizer.param_groups:
             param_group['lr'] = lr
-        print('Updating learning rate to {}'.format(lr))
+        print(f"Updating learning rate to {lr}")
 
 class EarlyStopping:
     def __init__(self, patience=7, verbose=False, delta=0):

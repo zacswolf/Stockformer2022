@@ -51,7 +51,7 @@ class EncoderLayer(nn.Module):
         y = self.dropout(self.activation(self.conv1(y.transpose(-1,1))))
         y = self.dropout(self.conv2(y).transpose(-1,1))
 
-        return self.norm2(x+y), attn
+        return self.norm2(x + y), attn
 
 class Encoder(nn.Module):
     def __init__(self, attn_layers, conv_layers=None, norm_layer=None):
@@ -61,9 +61,10 @@ class Encoder(nn.Module):
         self.norm = norm_layer
 
     def forward(self, x, attn_mask=None):
-        # x [B, L, D]
+        # x [batch_size/#num_gpus, seq_len, d_model]
         attns = []
         if self.conv_layers is not None:
+            assert len(self.attn_layers) == len(self.conv_layers) + 1
             for attn_layer, conv_layer in zip(self.attn_layers, self.conv_layers):
                 x, attn = attn_layer(x, attn_mask=attn_mask)
                 x = conv_layer(x)
