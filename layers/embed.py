@@ -94,16 +94,26 @@ class TimeFeatureEmbedding(nn.Module):
         return self.embed(x)
 
 class DataEmbedding(nn.Module):
-    def __init__(self, c_in, d_model, embed_type='fixed', freq='h', dropout=0.1):
+    def __init__(self, c_in, d_model, embed_type="fixed", freq="h", dropout=0.1, position_embedding=True):
         super(DataEmbedding, self).__init__()
 
-        self.value_embedding = TokenEmbedding(c_in=c_in, d_model=d_model)
-        self.position_embedding = PositionalEmbedding(d_model=d_model)
-        self.temporal_embedding = TemporalEmbedding(d_model=d_model, embed_type=embed_type, freq=freq) if embed_type!='timeF' else TimeFeatureEmbedding(d_model=d_model, embed_type=embed_type, freq=freq)
+        if embed_type is not None:
+            assert embed_type in ["fixed", "learned", "timeF"], "Invalid embed_type"
+            if embed_type == "fixed" or embed_type == "learned":
+                self.temporal_embedding = TemporalEmbedding(d_model=d_model, embed_type=embed_type, freq=freq)  
+            elif embed_type == "timeF": 
+                self.temporal_embedding = TimeFeatureEmbedding(d_model=d_model, embed_type=embed_type, freq=freq)
+            # TODO: Impliment Time2Vec
+        else:
+            self.temporal_embedding = lambda _: 0
 
+        self.value_embedding = TokenEmbedding(c_in=c_in, d_model=d_model)
+        
+        self.position_embedding = PositionalEmbedding(d_model=d_model) if position_embedding else lambda x: 0            
+        
+        
         self.dropout = nn.Dropout(p=dropout)
 
     def forward(self, x, x_mark):
         x = self.value_embedding(x) + self.position_embedding(x) + self.temporal_embedding(x_mark)
-        
         return self.dropout(x)

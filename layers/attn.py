@@ -157,6 +157,7 @@ class AttentionLayer(nn.Module):
             attn_mask
         )
         if self.mix:
+            # https://arxiv.org/pdf/2109.02789.pdf
             out = out.transpose(2,1).contiguous()
         out = out.view(B, L, -1)
 

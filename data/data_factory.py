@@ -35,17 +35,7 @@ def data_provider(args, flag):
         freq = args.freq
 
     data_set = Data(args, flag=flag, freq=freq, timeenc=timeenc)
-    #     root_path=args.root_path,
-    #     data_path=args.data_path,
-    #     flag=flag,
-    #     size=[args.seq_len, args.label_len, args.pred_len],
-    #     features=args.features,
-    #     target=args.target,
-    #     inverse=args.inverse,
-    #     timeenc=timeenc,
-    #     freq=freq,
-    #     cols=args.cols
-    # )
+
     print(flag, len(data_set))
     data_loader = DataLoader(
         data_set,

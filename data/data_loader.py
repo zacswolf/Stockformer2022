@@ -199,6 +199,7 @@ class Dataset_Custom(Dataset):
         assert freq is not None
         assert flag in ['train', 'test', 'val']
         assert config.root_path is not None
+        assert config.data_path is not None
 
         self.config = config
 
@@ -207,34 +208,6 @@ class Dataset_Custom(Dataset):
 
         type_map = {'train':0, 'val':1, 'test':2}
         self.set_type = type_map[flag]
-
-        # # info
-        # assert config.seq_len is not None
-        # assert config.label_len is not None
-        # assert config.pred_len is not None
-        # self.seq_len = config.seq_len # 24*4*4
-        # self.label_len = config.label_len # 24*4
-        # self.pred_len = config.pred_len # 24*4
-        # # init
-        # assert flag in ['train', 'test', 'val']
-        # type_map = {'train':0, 'val':1, 'test':2}
-        # self.set_type = type_map[flag]
-        
-        # self.features = config.features #if config.features is not None else "S"
-        # self.target = config.target #if config.target is not None else "OT"
-        # self.scale = config.scale #if config.scale is not None else True
-        # self.inverse = config.inverse #if config.inverse is not None else False
-        # self.timeenc = timeenc 
-        # assert freq is not None
-        # self.freq = freq
-        # self.cols = config.cols #if config.cols is not None else None
-
-        # assert config.root_path is not None
-        # self.root_path = config.root_path
-        # assert config.data_path is not None
-        # self.data_path = config.data_path
-
-        # self.date_cutoff = config.date_cutoff# None if config.date_cutoff is None else pd.to_datetime(config.date_cutoff)
 
         self.__read_data__()
 

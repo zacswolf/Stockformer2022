@@ -26,11 +26,13 @@ class Exp_Informer(Exp_Basic):
         model_dict = {
             'informer':Informer,
             'informerstack':InformerStack,
+            'stockformer':Stockformer
         }
 
         # Use stack layers for encoder layers if using informerstack
         self.args.e_layers = self.args.s_layers if self.args.model=='informerstack' else self.args.e_layers
         
+        assert self.args.model in model_dict, f"Invalid args.model: {self.args.model}, options: {list(model_dict.keys())}"
         model = model_dict[self.args.model](self.args).float()
         
         if self.args.use_multi_gpu and self.args.use_gpu:
@@ -48,6 +50,16 @@ class Exp_Informer(Exp_Basic):
     def _select_criterion(self):
         criterion =  nn.MSELoss()
         return criterion
+
+    def _select_scheduler(self, optimizer):
+        if self.args.lradj == "type1":
+            lmbda = lambda epoch: 0.5
+            scheduler = torch.optim.lr_scheduler.MultiplicativeLR(optimizer, lr_lambda=lmbda, verbose=True)
+        elif self.args.lradj == "type3":
+            scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=.5, patience=2, threshold=1e-6, cooldown=0, verbose=True)
+        else:
+            scheduler = None
+        return scheduler
 
     def vali(self, vali_data, vali_loader, criterion):
         self.model.eval()
@@ -77,10 +89,14 @@ class Exp_Informer(Exp_Basic):
         time_now = time.time()
         
         train_steps = len(train_loader)
-        early_stopping = EarlyStopping(patience=self.args.patience, verbose=True)
+
+        early_stopping = None
+        if not self.args.no_early_stop:
+            early_stopping = EarlyStopping(patience=self.args.patience, verbose=True) 
         
         model_optim = self._select_optimizer()
         criterion =  self._select_criterion()
+        scheduler =  self._select_scheduler(model_optim)
 
         if self.args.use_amp:
             scaler = torch.cuda.amp.GradScaler()
@@ -116,46 +132,56 @@ class Exp_Informer(Exp_Basic):
                     loss.backward()
                     model_optim.step()
 
-            print("Epoch: {} cost time: {}".format(epoch+1, time.time()-epoch_time))
+            print(f"Epoch: {epoch+1} cost time: {time.time()-epoch_time}")
             train_loss = np.average(train_loss)
             vali_loss = self.vali(vali_data, vali_loader, criterion)
             test_loss = self.vali(test_data, test_loader, criterion)
 
             print("Epoch: {0}, Steps: {1} | Train Loss: {2:.7f} Vali Loss: {3:.7f} Test Loss: {4:.7f}".format(
                 epoch + 1, train_steps, train_loss, vali_loss, test_loss))
-            early_stopping(vali_loss, self.model, path)
-            if early_stopping.early_stop:
-                print("Early stopping")
-                break
 
-            adjust_learning_rate(model_optim, epoch+1, self.args)
-            
-        best_model_path = os.path.join(path, 'checkpoint.pth')
-        self.model.load_state_dict(torch.load(best_model_path))
+            if not self.args.no_early_stop:
+                early_stopping(vali_loss, self.model, path)
+                if early_stopping.early_stop:
+                    print("Early stopping")
+                    break
+
+            # adjust_learning_rate(model_optim, epoch+1, self.args)
+            if scheduler is not None:
+                scheduler.step(metrics=vali_loss)
+        
+        if self.args.no_early_stop:
+            # This is only for debugging
+            print("Saving overfitted model")
+            # os.rename(os.path.join(path, 'checkpoint.pth'), os.path.join(path, 'checkpoint-real.pth'))
+            torch.save(self.model.state_dict(), os.path.join(path, 'checkpoint.pth'))
+        else:
+            best_model_path = os.path.join(path, 'checkpoint.pth')
+            self.model.load_state_dict(torch.load(best_model_path))
         
         return self.model
 
-    def test(self, setting):
-        test_data, test_loader = self._get_data(flag='test')
+    def test(self, setting, flag='test'):
+        data, loader = self._get_data(flag=flag)
         
         self.model.eval()
         
         preds = []
         trues = []
         
-        for i, (batch_x,batch_y,batch_x_mark,batch_y_mark) in enumerate(test_loader):
+        for i, (batch_x,batch_y,batch_x_mark,batch_y_mark) in enumerate(loader):
             pred, true = self._process_one_batch(
-                test_data, batch_x, batch_y, batch_x_mark, batch_y_mark)
+                data, batch_x, batch_y, batch_x_mark, batch_y_mark)
             preds.append(pred.detach().cpu().numpy())
             trues.append(true.detach().cpu().numpy())
 
         assert len(preds) == len(trues)
         preds = np.array(preds)
         trues = np.array(trues)
-        print('test shape:', preds.shape, trues.shape)
+        print(flag, 'shape:', preds.shape, trues.shape)
         preds = preds.reshape(-1, preds.shape[-2], preds.shape[-1])
         trues = trues.reshape(-1, trues.shape[-2], trues.shape[-1])
-        print('test shape:', preds.shape, trues.shape)
+        print(flag, 'shape:', preds.shape, trues.shape)
 
         # Result save
         folder_path = os.path.join('./results/', setting)
@@ -167,16 +193,16 @@ class Exp_Informer(Exp_Basic):
             convert_file.write(json.dumps(self.args))
 
         mae, mse, rmse, mape, mspe = metric(preds, trues)
-        print('mse:{}, mae:{}'.format(mse, mae))
+        print(f"{flag} mse:{mse}, mae:{mae}")
 
         # Save metrics
         with open(os.path.join(folder_path, "results.txt"), 'a') as f:
-            f.write(f"{setting}\nmse:{mse}, mae:{mae}\n\n")
-        np.save(os.path.join(folder_path, 'metrics.npy'), np.array([mae, mse, rmse, mape, mspe]))
+            f.write(f"{setting}\t{flag}\nmse:{mse}, mae:{mae}\n\n")
+        np.save(os.path.join(folder_path, f"metrics_{flag}.npy"), np.array([mae, mse, rmse, mape, mspe]))
 
         # Save pred & true
-        np.save(os.path.join(folder_path, 'pred.npy'), preds)
-        np.save(os.path.join(folder_path, 'true.npy'), trues)
+        np.save(os.path.join(folder_path, f"pred_{flag}.npy"), preds)
+        np.save(os.path.join(folder_path, f"true_{flag}.npy"), trues)
 
         return
 
