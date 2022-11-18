@@ -1,6 +1,7 @@
 from data.data_factory import data_provider
 from exp.exp_basic import Exp_Basic
 from models.Informer import Informer, InformerStack
+from models.Stockformer import Stockformer
 
 from utils.tools import EarlyStopping, adjust_learning_rate
 from utils.metrics import metric

@@ -15,7 +15,11 @@ data_dict = {
 
 def data_provider(args, flag):
     Data = data_dict[args.data]
+
+    # TODO: Verify & Clean up timeenc logic
     timeenc = 0 if args.embed != 'timeF' else 1
+
+    assert (not args.inverse) or args.scale, "Can't enable inverse without enabling scale"
 
     if flag == 'test':
         shuffle_flag = False
