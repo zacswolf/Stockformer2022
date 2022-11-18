@@ -189,7 +189,7 @@ class Dataset_Custom(Dataset):
     def __init__(self, config, flag='train', freq='h', timeenc=0):
         # Default values
         defaults = {"size":None, "features":'S', "target":'OT', "scale":True, 
-            "inverse":False, "cols":None, "date_cutoff": None, "date_test": None
+            "inverse":False, "cols":None, "date_start": None, "date_end": None, "date_test": None
         }
         config = dotdict({**defaults, **config})
 
@@ -201,6 +201,9 @@ class Dataset_Custom(Dataset):
         assert timeenc is not None
         assert config.root_path is not None
         assert config.data_path is not None
+        assert (config.date_start is None) or (config.date_end is None) or (config.date_start < config.date_end), "date_start isn't before date_end"
+        assert (config.date_test is None) or (config.date_end is None) or (config.date_test < config.date_end), "date_test isn't before date_end"
+        assert (config.date_test is None) or (config.date_start is None) or (config.date_test > config.date_start), "date_test isn't after date_start"
 
         self.config = config
 
@@ -220,9 +223,11 @@ class Dataset_Custom(Dataset):
         '''
         df_raw.columns: ['date', ...(other features), target feature]
         '''
-        # Filter to datapoints after certain date_cutoff
-        if self.config.date_cutoff is not None:
-            df_raw = df_raw.loc[(df_raw['date'] >= self.config.date_cutoff)]
+        # Filter to datapoints in [date_start, date_end]
+        if self.config.date_start is not None:
+            df_raw = df_raw.loc[(df_raw['date'] >= self.config.date_start)]
+        if self.config.date_end is not None:
+            df_raw = df_raw.loc[(df_raw['date'] <= self.config.date_end)]
 
         if self.config.cols:
             cols=self.config.cols.copy()
@@ -301,7 +306,7 @@ class Dataset_Pred(Dataset):
     def __init__(self, config, flag='pred', freq='15min', timeenc=0):
         # Default values
         defaults = {"size":None, "features":'S', "target":'OT', "scale":True, 
-            "inverse":False, "cols":None, "date_cutoff": None,
+            "inverse":False, "cols":None, "date_start": None, "date_end": None
         }
         config = dotdict({**defaults, **config})
 
@@ -313,6 +318,7 @@ class Dataset_Pred(Dataset):
         assert timeenc is not None
         assert config.root_path is not None
         assert config.data_path is not None
+        assert (config.date_start is None) or (config.date_end is None) or (config.date_start < config.date_end), "date_start isn't before date_end"
 
         self.config = config
 
@@ -329,9 +335,11 @@ class Dataset_Pred(Dataset):
         df_raw.columns: ['date', ...(other features), target feature]
         '''
 
-        # Filter to datapoints after certain date_cutoff
-        if self.config.date_cutoff is not None:
-            df_raw = df_raw.loc[(df_raw['date'] >= self.config.date_cutoff)]
+        # Filter to datapoints in [date_start, date_end]
+        if self.config.date_start is not None:
+            df_raw = df_raw.loc[(df_raw['date'] >= self.config.date_start)]
+        if self.config.date_end is not None:
+            df_raw = df_raw.loc[(df_raw['date'] <= self.config.date_end)]
 
         if self.config.cols:
             cols=self.config.cols.copy()
