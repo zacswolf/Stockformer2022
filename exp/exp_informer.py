@@ -1,4 +1,4 @@
-from data.data_factory import data_provider
+from data_provider.data_factory import data_provider
 from exp.exp_basic import Exp_Basic
 from models.Informer import Informer, InformerStack
 from models.Stockformer import Stockformer
