@@ -136,7 +136,7 @@ def time_features(dates, timeenc=1, freq='h'):
     if timeenc==0:
         dates['month'] = dates.date.apply(lambda row:row.month,1)
         dates['day'] = dates.date.apply(lambda row:row.day,1)
-        dates['weekday'] = dates.date.apply(lambda row:row.weekday(),1)
+        dates['weekday'] = dates.date.apply(lambda row:row.weekday,1)
         dates['hour'] = dates.date.apply(lambda row:row.hour,1)
         dates['minute'] = dates.date.apply(lambda row:row.minute,1)
         dates['minute'] = dates.minute.map(lambda x:x//15)

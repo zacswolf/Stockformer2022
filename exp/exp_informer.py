@@ -1,6 +1,7 @@
 from data_provider.data_factory import data_provider
 from exp.exp_basic import Exp_Basic
 from models.Informer import Informer, InformerStack
+from models.Basic import NLinear, MLP
 from models.Stockformer import Stockformer
 
 from utils.tools import EarlyStopping, adjust_learning_rate
@@ -27,7 +28,9 @@ class Exp_Informer(Exp_Basic):
         model_dict = {
             'informer':Informer,
             'informerstack':InformerStack,
-            'stockformer':Stockformer
+            'mlp':MLP,
+            'stockformer':Stockformer,
+            'nlinear':NLinear
         }
 
         # Use stack layers for encoder layers if using informerstack
@@ -57,7 +60,7 @@ class Exp_Informer(Exp_Basic):
             lmbda = lambda epoch: 0.5
             scheduler = torch.optim.lr_scheduler.MultiplicativeLR(optimizer, lr_lambda=lmbda, verbose=True)
         elif self.args.lradj == "type3":
-            scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=.5, patience=2, threshold=1e-6, cooldown=0, verbose=True)
+            scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=.5, patience=2, threshold=1e-2, cooldown=0, verbose=True)
         else:
             scheduler = None
         return scheduler
@@ -65,9 +68,9 @@ class Exp_Informer(Exp_Basic):
     def vali(self, vali_data, vali_loader, criterion):
         self.model.eval()
         total_loss = []
-        for i, (batch_x,batch_y,batch_x_mark,batch_y_mark) in enumerate(vali_loader):
-            pred, true = self._process_one_batch(
-                vali_data, batch_x, batch_y, batch_x_mark, batch_y_mark)
+        for i, (batch_x,batch_y,batch_x_mark,batch_y_mark, _) in enumerate(vali_loader):
+            pred, true, _ = self._process_one_batch(
+                vali_data, batch_x, batch_y, batch_x_mark, batch_y_mark, ds_index=None)
             loss = criterion(pred.detach().cpu(), true.detach().cpu())
             total_loss.append(loss)
         total_loss = np.average(total_loss)
@@ -108,12 +111,12 @@ class Exp_Informer(Exp_Basic):
             
             self.model.train()
             epoch_time = time.time()
-            for i, (batch_x,batch_y,batch_x_mark,batch_y_mark) in enumerate(train_loader):
+            for i, (batch_x,batch_y,batch_x_mark,batch_y_mark, _) in enumerate(train_loader):
                 iter_count += 1
                 
                 model_optim.zero_grad()
-                pred, true = self._process_one_batch(
-                    train_data, batch_x, batch_y, batch_x_mark, batch_y_mark)
+                pred, true, _ = self._process_one_batch(
+                    train_data, batch_x, batch_y, batch_x_mark, batch_y_mark, ds_index=None)
                 loss = criterion(pred, true)
                 train_loss.append(loss.item())
                 
@@ -169,19 +172,23 @@ class Exp_Informer(Exp_Basic):
         
         preds = []
         trues = []
+        raw_dates = []
         
-        for i, (batch_x,batch_y,batch_x_mark,batch_y_mark) in enumerate(loader):
-            pred, true = self._process_one_batch(
-                data, batch_x, batch_y, batch_x_mark, batch_y_mark)
+        for i, (batch_x,batch_y,batch_x_mark,batch_y_mark,ds_index) in enumerate(loader):
+            pred, true, rdates = self._process_one_batch(
+                data, batch_x, batch_y, batch_x_mark, batch_y_mark, ds_index=ds_index)
             preds.append(pred.detach().cpu().numpy())
             trues.append(true.detach().cpu().numpy())
+            raw_dates.append(rdates)
 
         assert len(preds) == len(trues)
         preds = np.array(preds)
         trues = np.array(trues)
+        raw_dates = np.array(raw_dates)
         print(flag, 'shape:', preds.shape, trues.shape)
         preds = preds.reshape(-1, preds.shape[-2], preds.shape[-1])
         trues = trues.reshape(-1, trues.shape[-2], trues.shape[-1])
+        raw_dates = raw_dates.reshape(-1, raw_dates.shape[-1])
         print(flag, 'shape:', preds.shape, trues.shape)
 
         # Result save
@@ -201,9 +208,10 @@ class Exp_Informer(Exp_Basic):
             f.write(f"{setting}\t{flag}\nmse:{mse}, mae:{mae}\n\n")
         np.save(os.path.join(folder_path, f"metrics_{flag}.npy"), np.array([mae, mse, rmse, mape, mspe]))
 
-        # Save pred & true
+        # Save pred & true & raw dates
         np.save(os.path.join(folder_path, f"pred_{flag}.npy"), preds)
         np.save(os.path.join(folder_path, f"true_{flag}.npy"), trues)
+        np.save(os.path.join(folder_path, f"date_{flag}.npy"), raw_dates)
 
         return
 
@@ -219,9 +227,9 @@ class Exp_Informer(Exp_Basic):
         
         preds = []
         # pred_trues = []
-        for i, (batch_x,batch_y,batch_x_mark,batch_y_mark) in enumerate(pred_loader):
-            pred, true = self._process_one_batch(
-                pred_data, batch_x, batch_y, batch_x_mark, batch_y_mark)
+        for i, (batch_x,batch_y,batch_x_mark,batch_y_mark, _) in enumerate(pred_loader):
+            pred, true, _ = self._process_one_batch(
+                pred_data, batch_x, batch_y, batch_x_mark, batch_y_mark, ds_index=None)
             preds.append(pred.detach().cpu().numpy())
             # pred_trues.append(true.detach().cpu().numpy())
 
@@ -237,7 +245,7 @@ class Exp_Informer(Exp_Basic):
         
         return
 
-    def _process_one_batch(self, dataset_object, batch_x, batch_y, batch_x_mark, batch_y_mark):
+    def _process_one_batch(self, dataset_object, batch_x, batch_y, batch_x_mark, batch_y_mark, ds_index=None):
         batch_x = batch_x.float().to(self.device)
         batch_y = batch_y.float()
 
@@ -266,6 +274,14 @@ class Exp_Informer(Exp_Basic):
         if self.args.inverse:
             outputs = dataset_object.inverse_transform(outputs)
         f_dim = -1 if self.args.features=='MS' else 0
-        batch_y = batch_y[:,-self.args.pred_len:,f_dim:].to(self.device)
+        
+        if ds_index is None:
+            batch_y = batch_y[:,-self.args.pred_len:,f_dim:].to(self.device)
+            return outputs, batch_y, None
+        else:
+            batch_x_raw_dates, batch_y_raw_dates = dataset_object.index_to_dates(ds_index)
+            assert batch_y_raw_dates.shape == batch_y.shape[0:2]
+            batch_y = batch_y[:,-self.args.pred_len:,f_dim:].to(self.device)
+            batch_y_raw_dates = batch_y_raw_dates[:,-self.args.pred_len:]    
 
-        return outputs, batch_y
+            return outputs, batch_y, batch_y_raw_dates
