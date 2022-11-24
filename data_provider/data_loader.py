@@ -67,6 +67,7 @@ class Dataset_ETT_hour(Dataset):
             
         df_stamp = df_raw[['date']][border1:border2]
         df_stamp['date'] = pd.to_datetime(df_stamp.date)
+        self.raw_dates = df_stamp.date.to_numpy(dtype = np.datetime64)
         data_stamp = time_features(df_stamp, timeenc=self.timeenc, freq=self.freq)
 
         self.data_x = data[border1:border2]
@@ -90,8 +91,20 @@ class Dataset_ETT_hour(Dataset):
         seq_x_mark = self.data_stamp[s_begin:s_end]
         seq_y_mark = self.data_stamp[r_begin:r_end]
 
-        return seq_x, seq_y, seq_x_mark, seq_y_mark
-    
+        return seq_x, seq_y, seq_x_mark, seq_y_mark, index
+
+    def index_to_dates(self, index):
+        # index is of length batch_size
+        s_begin = index
+        s_end = s_begin + self.config.seq_len
+        r_begin = s_end - self.config.label_len 
+        r_end = r_begin + self.config.label_len + self.config.pred_len
+
+        seq_x_raw_dates = self.raw_dates[np.r_[s_begin,s_end-1].reshape(-1, index.shape[0]).T]
+        seq_y_raw_dates = self.raw_dates[np.r_[r_begin,r_end-1].reshape(-1, index.shape[0]).T]
+
+        return seq_x_raw_dates, seq_y_raw_dates
+
     def __len__(self):
         return len(self.data_x) - self.seq_len- self.pred_len + 1
 
@@ -153,6 +166,7 @@ class Dataset_ETT_minute(Dataset):
             
         df_stamp = df_raw[['date']][border1:border2]
         df_stamp['date'] = pd.to_datetime(df_stamp.date)
+        self.raw_dates = df_stamp.date.to_numpy(dtype = np.datetime64)
         data_stamp = time_features(df_stamp, timeenc=self.timeenc, freq=self.freq)
         
         self.data_x = data[border1:border2]
@@ -176,8 +190,20 @@ class Dataset_ETT_minute(Dataset):
         seq_x_mark = self.data_stamp[s_begin:s_end]
         seq_y_mark = self.data_stamp[r_begin:r_end]
 
-        return seq_x, seq_y, seq_x_mark, seq_y_mark
+        return seq_x, seq_y, seq_x_mark, seq_y_mark, index
     
+    def index_to_dates(self, index):
+        # index is of length batch_size
+        s_begin = index
+        s_end = s_begin + self.config.seq_len
+        r_begin = s_end - self.config.label_len 
+        r_end = r_begin + self.config.label_len + self.config.pred_len
+
+        seq_x_raw_dates = self.raw_dates[np.r_[s_begin,s_end-1].reshape(-1, index.shape[0]).T]
+        seq_y_raw_dates = self.raw_dates[np.r_[r_begin,r_end-1].reshape(-1, index.shape[0]).T]
+
+        return seq_x_raw_dates, seq_y_raw_dates
+
     def __len__(self):
         return len(self.data_x) - self.seq_len - self.pred_len + 1
 
@@ -270,6 +296,7 @@ class Dataset_Custom(Dataset):
             
         df_stamp = df_raw[['date']][border1:border2]
         df_stamp['date'] = pd.to_datetime(df_stamp.date)
+        self.raw_dates = df_stamp.date.to_numpy(dtype = np.datetime64)
         data_stamp = time_features(df_stamp, timeenc=self.timeenc, freq=self.freq)
 
         self.data_x = data[border1:border2]
@@ -294,7 +321,19 @@ class Dataset_Custom(Dataset):
         seq_x_mark = self.data_stamp[s_begin:s_end]
         seq_y_mark = self.data_stamp[r_begin:r_end]
 
-        return seq_x, seq_y, seq_x_mark, seq_y_mark
+        return seq_x, seq_y, seq_x_mark, seq_y_mark, index
+    
+    def index_to_dates(self, index):
+        # index is of length batch_size
+        s_begin = index
+        s_end = s_begin + self.config.seq_len
+        r_begin = s_end - self.config.label_len 
+        r_end = r_begin + self.config.label_len + self.config.pred_len
+
+        seq_x_raw_dates = self.raw_dates[np.r_[s_begin,s_end-1].reshape(-1, index.shape[0]).T]# self.raw_dates.iloc[np.r_[s_begin,s_end]]
+        seq_y_raw_dates = self.raw_dates[np.r_[r_begin,r_end-1].reshape(-1, index.shape[0]).T]# self.raw_dates.iloc[np.r_[r_begin,r_end]]
+
+        return seq_x_raw_dates, seq_y_raw_dates
     
     def __len__(self):
         return len(self.data_x) - self.config.seq_len- self.config.pred_len + 1
@@ -368,7 +407,8 @@ class Dataset_Pred(Dataset):
         pred_dates = pd.date_range(tmp_stamp.date.values[-1], periods=self.config.pred_len+1, freq=self.freq)
         
         df_stamp = pd.DataFrame(columns = ['date'])
-        df_stamp.date = list(tmp_stamp.date.values) + list(pred_dates[1:])
+        df_stamp.date = pd.to_datetime(list(tmp_stamp.date.values) + list(pred_dates[1:]), utc=True)
+        self.raw_dates = df_stamp.date.to_numpy(dtype = np.datetime64)
         data_stamp = time_features(df_stamp, timeenc=self.timeenc, freq=self.freq[-1:])
 
         self.data_x = data[border1:border2]
@@ -392,8 +432,20 @@ class Dataset_Pred(Dataset):
         seq_x_mark = self.data_stamp[s_begin:s_end]
         seq_y_mark = self.data_stamp[r_begin:r_end]
 
-        return seq_x, seq_y, seq_x_mark, seq_y_mark
+        return seq_x, seq_y, seq_x_mark, seq_y_mark, index
     
+    def index_to_dates(self, index):
+        # index is of length batch_size
+        s_begin = index
+        s_end = s_begin + self.config.seq_len
+        r_begin = s_end - self.config.label_len 
+        r_end = r_begin + self.config.label_len + self.config.pred_len
+
+        seq_x_raw_dates = self.raw_dates[np.r_[s_begin,s_end-1].reshape(-1, index.shape[0]).T]
+        seq_y_raw_dates = self.raw_dates[np.r_[r_begin,r_end-1].reshape(-1, index.shape[0]).T]
+
+        return seq_x_raw_dates, seq_y_raw_dates
+
     def __len__(self):
         return len(self.data_x) - self.config.seq_len + 1
 
