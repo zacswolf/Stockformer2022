@@ -106,6 +106,12 @@ class Exp_Informer(Exp_Basic):
             scaler = torch.cuda.amp.GradScaler()
 
         for epoch in range(self.args.train_epochs):
+            if epoch == 0:
+                for param_group in model_optim.param_groups:
+                    param_group['lr'] = 1e-8
+            elif epoch == 1:
+                for param_group in model_optim.param_groups:
+                    param_group['lr'] = self.args.learning_rate
             iter_count = 0
             train_loss = []
             
@@ -165,7 +171,11 @@ class Exp_Informer(Exp_Basic):
         
         return self.model
 
-    def test(self, setting, flag='test'):
+    def test(self, setting, flag='test', inverse=True):
+        # Enable inverse if scale
+        inverse_og = self.args.inverse
+        self.args.inverse = self.args.scale and inverse
+
         data, loader = self._get_data(flag=flag)
         
         self.model.eval()
@@ -212,7 +222,7 @@ class Exp_Informer(Exp_Basic):
         np.save(os.path.join(folder_path, f"pred_{flag}.npy"), preds)
         np.save(os.path.join(folder_path, f"true_{flag}.npy"), trues)
         np.save(os.path.join(folder_path, f"date_{flag}.npy"), raw_dates)
-
+        self.args.inverse = inverse_og
         return
 
     def predict(self, setting, load=False):

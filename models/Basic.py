@@ -26,10 +26,10 @@ class MLP(nn.Module):
         else:
             assert self.e_layers >= 2
 
-            layers = [nn.Linear(self.enc_in, self.d_model), nn.ReLU()]
+            layers = [nn.Linear(self.enc_in, self.d_model), nn.GELU()]
             for _ in range(config.e_layers-2):
                 layers.append(nn.Linear(self.d_model, self.d_model))
-                layers.append(nn.ReLU())
+                layers.append(nn.GELU())
 
             layers.append(nn.Linear(self.d_model, self.c_out))
         
