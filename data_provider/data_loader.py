@@ -100,8 +100,8 @@ class Dataset_ETT_hour(Dataset):
         r_begin = s_end - self.config.label_len 
         r_end = r_begin + self.config.label_len + self.config.pred_len
 
-        seq_x_raw_dates = self.raw_dates[np.r_[s_begin,s_end-1].reshape(-1, index.shape[0]).T]
-        seq_y_raw_dates = self.raw_dates[np.r_[r_begin,r_end-1].reshape(-1, index.shape[0]).T]
+        seq_x_raw_dates = self.raw_dates[np.add.outer(s_begin, np.arange(self.config.seq_len))]
+        seq_y_raw_dates = self.raw_dates[np.add.outer(r_begin, np.arange(self.config.label_len + self.config.pred_len))]
 
         return seq_x_raw_dates, seq_y_raw_dates
 
@@ -199,8 +199,8 @@ class Dataset_ETT_minute(Dataset):
         r_begin = s_end - self.config.label_len 
         r_end = r_begin + self.config.label_len + self.config.pred_len
 
-        seq_x_raw_dates = self.raw_dates[np.r_[s_begin,s_end-1].reshape(-1, index.shape[0]).T]
-        seq_y_raw_dates = self.raw_dates[np.r_[r_begin,r_end-1].reshape(-1, index.shape[0]).T]
+        seq_x_raw_dates = self.raw_dates[np.add.outer(s_begin, np.arange(self.config.seq_len))]
+        seq_y_raw_dates = self.raw_dates[np.add.outer(r_begin, np.arange(self.config.label_len + self.config.pred_len))]
 
         return seq_x_raw_dates, seq_y_raw_dates
 
@@ -330,8 +330,10 @@ class Dataset_Custom(Dataset):
         r_begin = s_end - self.config.label_len 
         r_end = r_begin + self.config.label_len + self.config.pred_len
 
-        seq_x_raw_dates = self.raw_dates[np.r_[s_begin,s_end-1].reshape(-1, index.shape[0]).T]# self.raw_dates.iloc[np.r_[s_begin,s_end]]
-        seq_y_raw_dates = self.raw_dates[np.r_[r_begin,r_end-1].reshape(-1, index.shape[0]).T]# self.raw_dates.iloc[np.r_[r_begin,r_end]]
+        seq_x_raw_dates = self.raw_dates[np.add.outer(s_begin, np.arange(self.config.seq_len))]
+        seq_y_raw_dates = self.raw_dates[np.add.outer(r_begin, np.arange(self.config.label_len + self.config.pred_len))]
+        # seq_x_raw_dates = self.raw_dates[np.r_[s_begin,s_end-1].reshape(-1, index.shape[0]).T]# self.raw_dates.iloc[np.r_[s_begin,s_end]]
+        # seq_y_raw_dates = self.raw_dates[np.r_[r_begin,r_end-1].reshape(-1, index.shape[0]).T]# self.raw_dates.iloc[np.r_[r_begin,r_end]]
 
         return seq_x_raw_dates, seq_y_raw_dates
     
@@ -441,8 +443,8 @@ class Dataset_Pred(Dataset):
         r_begin = s_end - self.config.label_len 
         r_end = r_begin + self.config.label_len + self.config.pred_len
 
-        seq_x_raw_dates = self.raw_dates[np.r_[s_begin,s_end-1].reshape(-1, index.shape[0]).T]
-        seq_y_raw_dates = self.raw_dates[np.r_[r_begin,r_end-1].reshape(-1, index.shape[0]).T]
+        seq_x_raw_dates = self.raw_dates[np.add.outer(s_begin, np.arange(self.config.seq_len))]
+        seq_y_raw_dates = self.raw_dates[np.add.outer(r_begin, np.arange(self.config.label_len + self.config.pred_len))]
 
         return seq_x_raw_dates, seq_y_raw_dates
 
