@@ -1,3 +1,4 @@
+import os
 import torch
 import torch.nn as nn
 
@@ -43,11 +44,18 @@ class Stockformer(nn.Module):
         # ])
 
 
+        # Load pre-trained model
+        if config.load_model_path is not None:
+            path = os.path.join(config.checkpoints, config.load_model_path)
+            print(f"Loading Model from {path}")
+            self.load_state_dict(torch.load(path))
+
 
     def forward(self, x_enc, x_mark_enc, x_dec, x_mark_dec, 
-                enc_self_mask=None, dec_self_mask=None, dec_enc_mask=None):
+                enc_self_mask=None, dec_self_mask=None, dec_enc_mask=None, pre_train=False):
         # x_enc is (batch_size / num gpus, seq_len, enc_in)
-        # x_mark_enc is (batch_size / num gpus, seq_len, date-representation (7forhours))
+        # x_mark_enc is (batch_size / num gpus, seq_len, date-representation (7forhours)
+
         assert x_enc.shape[1] == self.seq_len
 
         # emb_out is (batch_size / num gpus, seq_len, d_model)
