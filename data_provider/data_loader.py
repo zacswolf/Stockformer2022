@@ -314,8 +314,10 @@ class Dataset_Custom(Dataset):
 
         seq_x = self.data_x[s_begin:s_end]
         if self.config.inverse:
-            # TODO: Figure out why this is so complicated
-            seq_y = np.concatenate([self.data_x[r_begin:r_begin+self.config.label_len], self.data_y[r_begin+self.config.label_len:r_end]], 0)
+            seq_y = np.concatenate([
+                self.data_x[r_begin:r_begin+self.config.label_len], # Use non-scaled data_x
+                self.data_y[r_begin+self.config.label_len:r_end]
+                ], axis=0)
         else:
             seq_y = self.data_y[r_begin:r_end]
         seq_x_mark = self.data_stamp[s_begin:s_end]

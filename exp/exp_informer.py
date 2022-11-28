@@ -6,6 +6,7 @@ from models.Stockformer import Stockformer
 
 from utils.tools import EarlyStopping, adjust_learning_rate
 from utils.metrics import metric
+from utils.criterions import stock_loss
 
 import numpy as np
 
@@ -52,7 +53,14 @@ class Exp_Informer(Exp_Basic):
         return model_optim
     
     def _select_criterion(self):
-        criterion =  nn.MSELoss()
+        if "stock" in self.args.loss:
+            _, stock_loss_mode = self.args.loss.split("_")
+            assert self.args.target.split("_")[1] == "pctchange", "Can't use stock loss unless target is pctchange"
+            assert not (self.args.scale and not self.args.inverse), "Can't use stock loss when args.scale==True and args.inverse==False."
+            criterion = stock_loss(self.args, stock_loss_mode=stock_loss_mode)
+        else:
+            assert self.args.loss == "mse"
+            criterion =  nn.MSELoss()
         return criterion
 
     def _select_scheduler(self, optimizer):
