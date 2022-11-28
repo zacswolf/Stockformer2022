@@ -1,0 +1,19 @@
+{
+    "model": "stockformer",
+    "enc_in": 9,
+    "dec_in": 9,
+    "c_out": 1,
+    "d_model": 128,
+    "n_heads": 8,
+    "e_layers": 12,
+    "d_layers": 4,
+    "d_ff": 2048,
+    "dropout": 0.05,
+    "embed": null,
+    "activation": "gelu",
+    "attn": "full",
+    "factor": 5,
+    "distil": false,
+    "output_attention": false,
+    "mix": false
+}
