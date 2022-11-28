@@ -262,21 +262,15 @@ class Exp_Informer(Exp_Basic):
         batch_x_mark = batch_x_mark.float().to(self.device)
         batch_y_mark = batch_y_mark.float().to(self.device)
 
-        # decoder input
-        # FF: dec_inp = torch.zeros_like(batch_y[:, -self.args.pred_len:, :]).float()
-        if self.args.padding==0:
-            dec_inp = torch.zeros([batch_y.shape[0], self.args.pred_len, batch_y.shape[-1]]).float()
-        elif self.args.padding==1:
-            dec_inp = torch.ones([batch_y.shape[0], self.args.pred_len, batch_y.shape[-1]]).float()
-        dec_inp = torch.cat([batch_y[:,:self.args.label_len,:], dec_inp], dim=1).float().to(self.device)
-        # encoder - decoder
-        if self.args.use_amp:
-            with torch.cuda.amp.autocast():
-                if self.args.output_attention:
-                    outputs = self.model(batch_x, batch_x_mark, dec_inp, batch_y_mark)[0]
-                else:
-                    outputs = self.model(batch_x, batch_x_mark, dec_inp, batch_y_mark)
-        else:
+        # Decoder input if self.args.dec_in
+        dec_inp = None
+        if self.args.dec_in and (self.args.padding == 0 or self.args.padding == 1):
+            # FF: dec_inp = torch.zeros_like(batch_y[:, -self.args.pred_len:, :]).float()
+            dec_inp = torch.full([batch_y.shape[0], self.args.pred_len, batch_y.shape[-1]], self.args.padding).float()
+            dec_inp = torch.cat([batch_y[:,:self.args.label_len,:], dec_inp], dim=1).float().to(self.device)
+        
+        # Encoder - Decoder
+        with torch.cuda.amp.autocast(enabled=self.args.use_amp):
             if self.args.output_attention:
                 outputs = self.model(batch_x, batch_x_mark, dec_inp, batch_y_mark)[0]
             else:
@@ -292,6 +286,5 @@ class Exp_Informer(Exp_Basic):
             batch_x_raw_dates, batch_y_raw_dates = dataset_object.index_to_dates(ds_index)
             assert batch_y_raw_dates.shape == batch_y.shape[0:2]
             batch_y = batch_y[:,-self.args.pred_len:,f_dim:].to(self.device)
-            batch_y_raw_dates = batch_y_raw_dates[:,-self.args.pred_len:]    
-
+            batch_y_raw_dates = batch_y_raw_dates[:,-self.args.pred_len:]
             return outputs, batch_y, batch_y_raw_dates
