@@ -3,9 +3,7 @@
 .env
 
 checkpoints
-data/ETT
-data/old
-data/raw
+data
 results
 
 layers2/

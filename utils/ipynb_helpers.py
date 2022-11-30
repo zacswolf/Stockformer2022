@@ -8,6 +8,7 @@ from utils.tools import dotdict
 
 import pandas as pd
 
+
 # Args / Settings helper functions
 
 def args_from_setting(setting, args):
@@ -71,6 +72,12 @@ def read_data(out_file="realdata.csv"):
     # ast.literal_eval
     data.columns = data.columns.map(converter)
     data.index = pd.to_datetime(data.index)
+    return data
+
+def add_tz(data, time_zone='US/Eastern'):
+    """Add timezone to timezone-unlabled df"""
+    t = pd.to_datetime(data.index).to_series()
+    data.index = t.dt.tz_localize(time_zone)
     return data
 
 def convert_tz(data, time_zone='US/Eastern'):
