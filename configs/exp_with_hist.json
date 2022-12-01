@@ -2,7 +2,7 @@
     "des": "with_hist",
     "data": "custom",
     "checkpoints": "./checkpoints",
-    "root_path": "./data/ETT/",
+    "root_path": "./data/stock/",
     "data_path": "full_1h.csv",
     "freq": "h",
     "features": "MS",
