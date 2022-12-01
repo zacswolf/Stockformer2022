@@ -8,6 +8,7 @@ class MLP(nn.Module):
     """
     Just your everyday neural net
     """
+
     def __init__(self, config):
         super(MLP, self).__init__()
         self.seq_len = config.seq_len
@@ -27,14 +28,13 @@ class MLP(nn.Module):
             assert self.e_layers >= 2
 
             layers = [nn.Linear(self.enc_in, self.d_model), nn.GELU()]
-            for _ in range(config.e_layers-2):
+            for _ in range(config.e_layers - 2):
                 layers.append(nn.Linear(self.d_model, self.d_model))
                 layers.append(nn.GELU())
 
             layers.append(nn.Linear(self.d_model, self.c_out))
-        
+
         self.model = nn.Sequential(*layers)
-            
 
     def forward(self, x, *args):
         # x: [Batch, Input length, Channel]
@@ -46,6 +46,7 @@ class NLinear(nn.Module):
     """
     Normalization-Linear
     """
+
     def __init__(self, config):
         super(NLinear, self).__init__()
         self.seq_len = config.seq_len
@@ -56,10 +57,8 @@ class NLinear(nn.Module):
 
     def forward(self, x, *args):
         # x: [Batch, Input length, Channel]
-        seq_last = x[:,-1:,:].detach()
+        seq_last = x[:, -1:, :].detach()
         x = x - seq_last
-        x = self.linear(x.permute(0,2,1)).permute(0,2,1)
+        x = self.linear(x.permute(0, 2, 1)).permute(0, 2, 1)
         x = x + seq_last
-        return x # [Batch, Output length, Channel]
-
-
+        return x  # [Batch, Output length, Channel]

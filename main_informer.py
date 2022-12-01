@@ -4,6 +4,7 @@ import torch
 
 from exp.exp_informer import Exp_Informer
 
+# fmt: off
 parser = argparse.ArgumentParser(description='[Informer] Long Sequences Forecasting')
 
 parser.add_argument('--model', type=str, required=True, default='informer',help='model of experiment, options: [informer, informerstack, informerlight(TBD)]')
@@ -19,8 +20,8 @@ parser.add_argument('--checkpoints', type=str, default='./checkpoints/', help='l
 parser.add_argument('--seq_len', type=int, default=96, help='input sequence length of Informer encoder')
 parser.add_argument('--label_len', type=int, default=48, help='start token length of Informer decoder')
 parser.add_argument('--pred_len', type=int, default=24, help='prediction sequence length')
-# Informer decoder input: concat[start token series(label_len), zero padding series(pred_len)]
 
+# Informer decoder input: concat[start token series(label_len), zero padding series(pred_len)]
 parser.add_argument('--enc_in', type=int, default=7, help='encoder input size')
 parser.add_argument('--dec_in', type=int, default=7, help='decoder input size')
 parser.add_argument('--c_out', type=int, default=7, help='output size')
@@ -57,59 +58,120 @@ parser.add_argument('--use_gpu', type=bool, default=True, help='use gpu')
 parser.add_argument('--gpu', type=int, default=0, help='gpu')
 parser.add_argument('--use_multi_gpu', action='store_true', help='use multiple gpus', default=False)
 parser.add_argument('--devices', type=str, default='0,1,2,3',help='device ids of multile gpus')
+# fmt: on
 
 args = parser.parse_args()
 
 args.use_gpu = True if torch.cuda.is_available() and args.use_gpu else False
 
 if args.use_gpu and args.use_multi_gpu:
-    args.devices = args.devices.replace(' ','')
-    device_ids = args.devices.split(',')
+    args.devices = args.devices.replace(" ", "")
+    device_ids = args.devices.split(",")
     args.device_ids = [int(id_) for id_ in device_ids]
     args.gpu = args.device_ids[0]
 
 data_parser = {
-    'ETTh1':{'data':'ETTh1.csv','T':'OT','M':[7,7,7],'S':[1,1,1],'MS':[7,7,1]},
-    'ETTh2':{'data':'ETTh2.csv','T':'OT','M':[7,7,7],'S':[1,1,1],'MS':[7,7,1]},
-    'ETTm1':{'data':'ETTm1.csv','T':'OT','M':[7,7,7],'S':[1,1,1],'MS':[7,7,1]},
-    'ETTm2':{'data':'ETTm2.csv','T':'OT','M':[7,7,7],'S':[1,1,1],'MS':[7,7,1]},
-    'WTH':{'data':'WTH.csv','T':'WetBulbCelsius','M':[12,12,12],'S':[1,1,1],'MS':[12,12,1]},
-    'ECL':{'data':'ECL.csv','T':'MT_320','M':[321,321,321],'S':[1,1,1],'MS':[321,321,1]},
-    'Solar':{'data':'solar_AL.csv','T':'POWER_136','M':[137,137,137],'S':[1,1,1],'MS':[137,137,1]},
+    "ETTh1": {
+        "data": "ETTh1.csv",
+        "T": "OT",
+        "M": [7, 7, 7],
+        "S": [1, 1, 1],
+        "MS": [7, 7, 1],
+    },
+    "ETTh2": {
+        "data": "ETTh2.csv",
+        "T": "OT",
+        "M": [7, 7, 7],
+        "S": [1, 1, 1],
+        "MS": [7, 7, 1],
+    },
+    "ETTm1": {
+        "data": "ETTm1.csv",
+        "T": "OT",
+        "M": [7, 7, 7],
+        "S": [1, 1, 1],
+        "MS": [7, 7, 1],
+    },
+    "ETTm2": {
+        "data": "ETTm2.csv",
+        "T": "OT",
+        "M": [7, 7, 7],
+        "S": [1, 1, 1],
+        "MS": [7, 7, 1],
+    },
+    "WTH": {
+        "data": "WTH.csv",
+        "T": "WetBulbCelsius",
+        "M": [12, 12, 12],
+        "S": [1, 1, 1],
+        "MS": [12, 12, 1],
+    },
+    "ECL": {
+        "data": "ECL.csv",
+        "T": "MT_320",
+        "M": [321, 321, 321],
+        "S": [1, 1, 1],
+        "MS": [321, 321, 1],
+    },
+    "Solar": {
+        "data": "solar_AL.csv",
+        "T": "POWER_136",
+        "M": [137, 137, 137],
+        "S": [1, 1, 1],
+        "MS": [137, 137, 1],
+    },
 }
 if args.data in data_parser.keys():
     data_info = data_parser[args.data]
-    args.data_path = data_info['data']
-    args.target = data_info['T']
+    args.data_path = data_info["data"]
+    args.target = data_info["T"]
     args.enc_in, args.dec_in, args.c_out = data_info[args.features]
 
-args.s_layers = [int(s_l) for s_l in args.s_layers.replace(' ','').split(',')]
+args.s_layers = [int(s_l) for s_l in args.s_layers.replace(" ", "").split(",")]
 args.detail_freq = args.freq
 args.freq = args.freq[-1:]
 
-print('Args in experiment:')
+print("Args in experiment:")
 print(args)
 
 Exp = Exp_Informer
 
 for ii in range(args.itr):
     # setting record of experiments
-    setting = '{}_{}_ft{}_sl{}_ll{}_pl{}_ei{}_di{}_co{}_i{}_dm{}_nh{}_el{}_dl{}_df{}_at{}_fc{}_eb{}_dt{}_mx{}_{}_{}'.format(args.model, args.data, args.features,
-                args.seq_len, args.label_len, args.pred_len,
-                args.enc_in, args.dec_in, args.c_out, args.inverse,
-                args.d_model, args.n_heads, args.e_layers, args.d_layers, args.d_ff, args.attn, args.factor,
-                args.embed, args.distil, args.mix, args.des, ii)
+    setting = "{}_{}_ft{}_sl{}_ll{}_pl{}_ei{}_di{}_co{}_i{}_dm{}_nh{}_el{}_dl{}_df{}_at{}_fc{}_eb{}_dt{}_mx{}_{}_{}".format(
+        args.model,
+        args.data,
+        args.features,
+        args.seq_len,
+        args.label_len,
+        args.pred_len,
+        args.enc_in,
+        args.dec_in,
+        args.c_out,
+        args.inverse,
+        args.d_model,
+        args.n_heads,
+        args.e_layers,
+        args.d_layers,
+        args.d_ff,
+        args.attn,
+        args.factor,
+        args.embed,
+        args.distil,
+        args.mix,
+        args.des,
+        ii,
+    )
 
-
-    exp = Exp(args) # set experiments
-    print('>>>>>>>start training : {}>>>>>>>>>>>>>>>>>>>>>>>>>>'.format(setting))
+    exp = Exp(args)  # set experiments
+    print(">>>>>>>start training : {}>>>>>>>>>>>>>>>>>>>>>>>>>>".format(setting))
     exp.train(setting)
-    
-    print('>>>>>>>testing : {}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<'.format(setting))
+
+    print(">>>>>>>testing : {}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<".format(setting))
     exp.test(setting)
 
     if args.do_predict:
-        print('>>>>>>>predicting : {}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<'.format(setting))
+        print(">>>>>>>predicting : {}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<".format(setting))
         exp.predict(setting, True)
 
     torch.cuda.empty_cache()
