@@ -11,3 +11,8 @@ models2/
 exp2/
 utils2/
 data_provider2/
+
+# Pytorch Lightning
+lightning_logs
+.lr_find_*
+.scale_batch_size_*
