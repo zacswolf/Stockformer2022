@@ -131,6 +131,10 @@ class InformerStack(nn.Module):
         self.attn = config.attn
         self.output_attention = config.output_attention
 
+        assert (
+            type(config.e_layers) is list
+        ), "For Informer Stack e_layers must be a list"
+
         # Encoding
         self.enc_embedding = DataEmbedding(
             config.enc_in, config.d_model, config.embed, config.freq, config.dropout

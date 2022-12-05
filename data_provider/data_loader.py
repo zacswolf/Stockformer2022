@@ -276,7 +276,7 @@ class Dataset_ETT_minute(Dataset):
 
 
 class Dataset_Custom(Dataset):
-    def __init__(self, config, flag="train", freq="h", timeenc=0):
+    def __init__(self, config, flag="train"):
         # Default values
         defaults = {
             "size": None,
@@ -288,6 +288,7 @@ class Dataset_Custom(Dataset):
             "date_start": None,
             "date_end": None,
             "date_test": None,
+            "embed": None,
         }
         config = dotdict({**defaults, **config})
 
@@ -295,8 +296,7 @@ class Dataset_Custom(Dataset):
         assert config.label_len is not None
         assert config.pred_len is not None
         assert flag in ["train", "test", "val"]
-        assert freq is not None
-        assert timeenc is not None
+        assert config.freq is not None
         assert config.root_path is not None
         assert config.data_path is not None
         assert (
@@ -316,9 +316,8 @@ class Dataset_Custom(Dataset):
         ), "date_test isn't after date_start"
 
         self.config = config
-
-        self.freq = freq
-        self.timeenc = timeenc
+        self.flag = flag
+        self.timeenc = 0 if config.embed != "timeF" else 1
 
         type_map = {"train": 0, "val": 1, "test": 2}
         self.set_type = type_map[flag]
@@ -328,6 +327,9 @@ class Dataset_Custom(Dataset):
     def __read_data__(self):
         self.scaler = StandardScaler()
         df_raw = pd.read_csv(os.path.join(self.config.root_path, self.config.data_path))
+        df_raw = df_raw.astype(
+            {c: np.float32 for c in df_raw.select_dtypes(include="float64").columns}
+        )
         df_raw["date"] = pd.to_datetime(df_raw["date"])
         """
         df_raw.columns: ['date', ...(other features), target feature]
@@ -377,18 +379,20 @@ class Dataset_Custom(Dataset):
         if self.config.scale:
             train_data = df_data[border1s[0] : border2s[0]]
             self.scaler.fit(train_data.values)
-            data = self.scaler.transform(df_data.values)
+            data = torch.from_numpy(self.scaler.transform(df_data.values))
         else:
-            data = df_data.values
+            data = torch.from_numpy(df_data.values)
 
         df_stamp = df_raw[["date"]][border1:border2]
         df_stamp["date"] = pd.to_datetime(df_stamp.date)
         self.raw_dates = df_stamp.date.to_numpy(dtype=np.datetime64)
-        data_stamp = time_features(df_stamp, timeenc=self.timeenc, freq=self.freq)
+        data_stamp = time_features(
+            df_stamp, timeenc=self.timeenc, freq=self.config.freq
+        )
 
         self.data_x = data[border1:border2]
         if self.config.inverse:
-            self.data_y = df_data.values[border1:border2]
+            self.data_y = torch.from_numpy(df_data.values[border1:border2])
         else:
             self.data_y = data[border1:border2]
         self.data_stamp = data_stamp
@@ -445,7 +449,7 @@ class Dataset_Custom(Dataset):
 
 
 class Dataset_Pred(Dataset):
-    def __init__(self, config, flag="pred", freq="15min", timeenc=0):
+    def __init__(self, config, flag="pred"):
         # Default values
         defaults = {
             "size": None,
@@ -456,6 +460,7 @@ class Dataset_Pred(Dataset):
             "cols": None,
             "date_start": None,
             "date_end": None,
+            "embed": None,
         }
         config = dotdict({**defaults, **config})
 
@@ -463,8 +468,7 @@ class Dataset_Pred(Dataset):
         assert config.label_len is not None
         assert config.pred_len is not None
         assert flag in ["pred"]
-        assert freq is not None
-        assert timeenc is not None
+        assert config.freq is not None
         assert config.root_path is not None
         assert config.data_path is not None
         assert (
@@ -474,9 +478,8 @@ class Dataset_Pred(Dataset):
         ), "date_start isn't before date_end"
 
         self.config = config
-
-        self.freq = freq
-        self.timeenc = timeenc
+        self.flag = flag
+        self.timeenc = 0 if config.embed != "timeF" else 1
 
         self.__read_data__()
 
@@ -520,7 +523,9 @@ class Dataset_Pred(Dataset):
         tmp_stamp = df_raw[["date"]][border1:border2]
         tmp_stamp["date"] = pd.to_datetime(tmp_stamp.date)
         pred_dates = pd.date_range(
-            tmp_stamp.date.values[-1], periods=self.config.pred_len + 1, freq=self.freq
+            tmp_stamp.date.values[-1],
+            periods=self.config.pred_len + 1,
+            freq=self.config.freq,
         )
 
         df_stamp = pd.DataFrame(columns=["date"])
@@ -528,7 +533,10 @@ class Dataset_Pred(Dataset):
             list(tmp_stamp.date.values) + list(pred_dates[1:]), utc=True
         )
         self.raw_dates = df_stamp.date.to_numpy(dtype=np.datetime64)
-        data_stamp = time_features(df_stamp, timeenc=self.timeenc, freq=self.freq[-1:])
+        # TODO: What is the deal with .freq[-1:]
+        data_stamp = time_features(
+            df_stamp, timeenc=self.timeenc, freq=self.config.freq[-1:]
+        )
 
         self.data_x = data[border1:border2]
         if self.config.inverse:
