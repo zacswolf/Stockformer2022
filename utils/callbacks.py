@@ -13,7 +13,7 @@ class PredTrueDateWriter(BasePredictionWriter):
         # this will create N (num processes) files in `output_dir` each containing
         # the predictions of it's respective rank
         folder_path = os.path.join(trainer.log_dir, "results/")
-        os.makedirs(folder_path)
+        os.makedirs(folder_path, exist_ok=True)
 
         data = {}
         for dataloader_idx, (data_dl, bi) in enumerate(zip(predictions, batch_indices)):
