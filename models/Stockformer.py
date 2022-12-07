@@ -76,7 +76,7 @@ class Stockformer(nn.Module):
     ):
         # x_enc is (batch_size / num gpus, seq_len, enc_in)
         # x_mark_enc is (batch_size / num gpus, seq_len, date-representation (7forhours)
-        assert len(x_enc.shape) == 3
+
         assert x_enc.shape[1] == self.seq_len
 
         # emb_out is (batch_size / num gpus, seq_len, d_model)

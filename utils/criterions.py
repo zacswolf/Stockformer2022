@@ -12,7 +12,6 @@ def stock_loss(
         true_c_log = true[torch.abs(pred) >= stock_lock_thresh]
         pred_c_log = pred[torch.abs(pred) >= stock_lock_thresh]
 
-        loss = None
         if stock_loss_mode == "lpp":
             # Log percent profit without shorting
             loss = -((true_c_log * torch.sign(pred_c_log))[pred_c_log > 0].sum())
