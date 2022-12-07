@@ -1,11 +1,16 @@
 **/__pycache__/
 .venv/
 .env
-.vscode
 
 checkpoints
 data
 results
+
+layers2/
+models2/
+exp2/
+utils2/
+data_provider2/
 
 # Pytorch Lightning
 lightning_logs
