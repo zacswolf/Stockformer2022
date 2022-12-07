@@ -116,7 +116,7 @@ setting = setting_from_args(args)
 print("Setting:", setting)
 
 
-strategy = "ddp"  # ["ddp", "ddp_spawn", "ddp_notebook", "ddp_fork", None]
+strategy = "dp"  # ["ddp", "ddp_spawn", "ddp_notebook", "ddp_fork", None]
 num_workers = 0  # os.cpu_count() * (strategy != "ddp_spawn")
 
 
