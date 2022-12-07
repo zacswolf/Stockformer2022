@@ -46,7 +46,7 @@ class ExpTimeseries(pl.LightningModule):
             assert not (
                 self.config.scale and not self.config.inverse
             ), "Can't use stock loss when config.scale==True and config.inverse==False."
-            criterion = stock_loss(self.config, stock_loss_mode=stock_loss_mode)
+            criterion = stock_loss(stock_loss_mode=stock_loss_mode)
             self.reduce_fx = "sum"
         else:
             assert self.config.loss == "mse"
