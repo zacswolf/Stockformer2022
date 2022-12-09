@@ -73,7 +73,7 @@ args.padding = 0  # TODO: Remove
 
 args.batch_size = 256  # 256  # 64
 args.learning_rate = 0.00001
-args.loss = "stock_tanh"  # What loss function to use: ["mse", "stock_lpp", "stock_lppws", "stock_tanh"]
+args.loss = "stock_tanh"  # What loss function to use: ["mse", "stock_lpp", "stock_lppns", "stock_tanh"]
 args.lradj = None  # What learning rate scheduler to use: ["type3", None, "type1"]
 args.train_epochs = 1
 args.patience = 20  # For early stopping

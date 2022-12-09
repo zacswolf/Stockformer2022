@@ -6,7 +6,7 @@ from models.Stockformer import Stockformer
 
 from utils.tools import EarlyStopping, adjust_learning_rate
 from utils.metrics import metric
-from utils.criterions import stock_loss
+from utils.stock_metrics import stock_loss
 
 import numpy as np
 

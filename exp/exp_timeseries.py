@@ -5,7 +5,7 @@ import pytorch_lightning as pl
 from models.Basic import MLP, NLinear
 from models.Informer import Informer, InformerStack
 from models.Stockformer import Stockformer
-from utils.criterions import stock_loss
+from utils.stock_metrics import stock_loss
 
 
 class ExpTimeseries(pl.LightningModule):
