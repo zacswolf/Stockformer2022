@@ -11,12 +11,12 @@ def stock_loss(
 
         if stock_loss_mode == "lpp":
             # Log percent profit with shorting
-            loss = PctProfitDirection.loss(pred_c_log, true_c_log, short_filter=0)
+            return PctProfitDirection.loss(pred_c_log, true_c_log, short_filter=0)
         elif stock_loss_mode == "lppns":
             # Log percent profit without shorting
-            loss = PctProfitDirection.loss(pred_c_log, true_c_log, short_filter=1)
+            return PctProfitDirection.loss(pred_c_log, true_c_log, short_filter=1)
         elif "tanh":
-            loss = PctProfitDirection.loss(pred_c_log, true_c_log, short_filter=0)
+            return PctProfitDirection.loss(pred_c_log, true_c_log, short_filter=0)
 
         raise Exception(f"Invalid Loss: {stock_loss_mode}")
 
