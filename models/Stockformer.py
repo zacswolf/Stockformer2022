@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 
 from layers.encoder import Encoder, EncoderLayer, ConvLayer
-from layers.attn import FullAttention, AttentionLayer
+from layers.attn import FullAttention, AttentionLayer, ProbAttention
 from layers.embed import DataEmbedding
 
 
@@ -12,6 +12,7 @@ class Stockformer(nn.Module):
         super(Stockformer, self).__init__()
         self.pred_len = config.pred_len
         assert self.pred_len == 1, "Stockformer needs pred_len to be 1"
+        self.attn = config.attn
         self.output_attention = config.output_attention
 
         self.seq_len = config.seq_len
@@ -20,12 +21,14 @@ class Stockformer(nn.Module):
         self.enc_embedding = DataEmbedding(
             config.enc_in, config.d_model, config.embed, config.freq, config.dropout
         )
-
+        # Attention
+        Attn = ProbAttention if config.attn == "prob" else FullAttention
+        # Encoder
         self.encoder = Encoder(
             [
                 EncoderLayer(
                     AttentionLayer(
-                        FullAttention(
+                        Attn(
                             False,
                             config.factor,
                             attention_dropout=config.dropout,
