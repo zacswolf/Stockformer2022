@@ -1,4 +1,6 @@
 import numpy as np
+import torch
+from torchmetrics import Metric
 
 
 def RSE(pred, true):
@@ -41,3 +43,27 @@ def metric(pred, true):
     mspe = MSPE(pred, true)
 
     return mae, mse, rmse, mape, mspe
+
+
+class MSELoss(Metric):
+    # Just testing to make sure torch metrics work as expected
+    is_differentiable = True
+
+    def __init__(self):
+        super().__init__()
+
+        self.add_state(
+            "sum_squared_errors",
+            default=torch.tensor(0, dtype=float),
+            dist_reduce_fx="sum",
+        )
+        self.add_state("n_observations", default=torch.tensor(0), dist_reduce_fx="sum")
+
+    def update(self, preds: torch.Tensor, target: torch.Tensor):
+        assert preds.shape == target.shape
+
+        self.sum_squared_errors += torch.sum(torch.square(preds - target))
+        self.n_observations += preds.numel()
+
+    def compute(self):
+        return self.sum_squared_errors / self.n_observations
