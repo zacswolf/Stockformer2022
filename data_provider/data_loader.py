@@ -81,7 +81,7 @@ class Dataset_ETT_hour(Dataset):
 
         if self.scale:
             train_data = df_data[border1s[0] : border2s[0]]
-            self.scaler.fit(train_data.values)
+            self.scaler.fit(train_data.values, scale_mean=not self.config.no_scale_mean)
             data = self.scaler.transform(df_data.values)
         else:
             data = df_data.values
@@ -211,7 +211,7 @@ class Dataset_ETT_minute(Dataset):
 
         if self.scale:
             train_data = df_data[border1s[0] : border2s[0]]
-            self.scaler.fit(train_data.values)
+            self.scaler.fit(train_data.values, scale_mean=not self.config.no_scale_mean)
             data = self.scaler.transform(df_data.values)
         else:
             data = df_data.values
@@ -283,7 +283,8 @@ class Dataset_Custom(Dataset):
             "features": "S",
             "target": "OT",
             "scale": True,
-            "inverse": False,
+            "inverse_pred": False,
+            "inverse_output": False,
             "cols": None,
             "date_start": None,
             "date_end": None,
@@ -314,6 +315,10 @@ class Dataset_Custom(Dataset):
             or (config.date_start is None)
             or (config.date_test > config.date_start)
         ), "date_test isn't after date_start"
+
+        assert (config.label_len == 0) or (
+            config.inverse_output == config.inverse_pred
+        ), "If label length is non-zero then inverse_pred and inverse_output should be the same"
 
         self.config = config
         self.flag = flag
@@ -378,7 +383,7 @@ class Dataset_Custom(Dataset):
 
         if self.config.scale:
             train_data = df_data[border1s[0] : border2s[0]]
-            self.scaler.fit(train_data.values)
+            self.scaler.fit(train_data.values, scale_mean=not self.config.no_scale_mean)
             data = torch.from_numpy(self.scaler.transform(df_data.values))
         else:
             data = torch.from_numpy(df_data.values)
@@ -391,7 +396,7 @@ class Dataset_Custom(Dataset):
         )
 
         self.data_x = data[border1:border2]
-        if self.config.inverse:
+        if self.config.inverse_pred:
             self.data_y = torch.from_numpy(df_data.values[border1:border2])
         else:
             self.data_y = data[border1:border2]
@@ -404,7 +409,9 @@ class Dataset_Custom(Dataset):
         r_end = r_begin + self.config.label_len + self.config.pred_len
 
         seq_x = self.data_x[s_begin:s_end]
-        if self.config.inverse:
+        if self.config.inverse_pred:
+            # this is where inverse_pred != inverse output gets wonky if label_len != 0
+            # its because the label doesn't get inversed
             seq_y = np.concatenate(
                 [
                     self.data_x[
@@ -515,7 +522,7 @@ class Dataset_Pred(Dataset):
             df_data = df_raw[[self.config.target]]
 
         if self.config.scale:
-            self.scaler.fit(df_data.values)
+            self.scaler.fit(df_data.values, scale_mean=not self.config.no_scale_mean)
             data = self.scaler.transform(df_data.values)
         else:
             data = df_data.values

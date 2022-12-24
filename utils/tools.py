@@ -69,8 +69,8 @@ class StandardScaler:
         self.mean = 0.0
         self.std = 1.0
 
-    def fit(self, data):
-        self.mean = data.mean(0)
+    def fit(self, data, scale_mean=True):
+        self.mean = data.mean(0) if scale_mean else 0.0
         self.std = data.std(0)
 
     def transform(self, data):

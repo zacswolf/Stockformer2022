@@ -24,18 +24,6 @@ class CustomDataModule(pl.LightningDataModule):
         self.batch_size = config.batch_size
         self.num_workers = num_workers
 
-        # data_dict = {
-        #     "ETTh1": Dataset_ETT_hour,
-        #     "ETTh2": Dataset_ETT_hour,
-        #     "ETTm1": Dataset_ETT_minute,
-        #     "ETTm2": Dataset_ETT_minute,
-        #     "WTH": Dataset_Custom,
-        #     "ECL": Dataset_Custom,
-        #     "Solar": Dataset_Custom,
-        #     "custom": Dataset_Custom,
-        # }
-        # Data = data_dict[config.data]
-
         assert (
             not config.inverse
         ) or config.scale, "Can't enable inverse without enabling scale"
@@ -63,7 +51,7 @@ class CustomDataModule(pl.LightningDataModule):
         return DataLoader(
             self.data_train,
             batch_size=self.batch_size,
-            shuffle=True,
+            shuffle=False,
             num_workers=self.num_workers,
             drop_last=True,
         )
@@ -75,8 +63,8 @@ class CustomDataModule(pl.LightningDataModule):
         return DataLoader(
             self.data_val,
             batch_size=self.batch_size,
-            shuffle=True,
-            drop_last=True,
+            shuffle=False,
+            drop_last=False,
             num_workers=self.num_workers,
         )
 
@@ -110,7 +98,7 @@ class CustomDataModule(pl.LightningDataModule):
             DataLoader(
                 self.data_train,
                 batch_size=self.config.batch_size,
-                shuffle=False,
+                shuffle=not self.config.dont_shuffle_train,
                 drop_last=False,
                 num_workers=self.num_workers,
             ),
