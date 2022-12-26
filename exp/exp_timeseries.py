@@ -106,18 +106,36 @@ class ExpTimeseries(pl.LightningModule):
             batch_y_mark,
             ds_index=None,
         )
-        loss = self.other_criterion(pred, true)
 
-        self.log(
-            "val_loss",
-            loss,
-            prog_bar=True,
-            on_step=False,
-            on_epoch=True,
-            sync_dist=False,
-        )
-
-        return loss
+        if dataloader_idx == 0:
+            # Actual val dataset
+            assert self.trainer.val_dataloaders[0].dataset.flag == "val"
+            loss = self.other_criterion(pred, true)
+            self.log(
+                "val_loss",
+                loss,
+                prog_bar=True,
+                on_step=False,
+                on_epoch=True,
+                sync_dist=False,
+                add_dataloader_idx=False,
+            )
+            return loss
+        elif dataloader_idx == 1:
+            # TODO: If we are using torch metrics we should create an additional loss function
+            # Test dataset
+            assert self.trainer.val_dataloaders[1].dataset.flag == "test"
+            loss = self.other_criterion(pred, true)
+            self.log(
+                "test_loss",
+                loss,
+                prog_bar=True,
+                on_step=False,
+                on_epoch=True,
+                sync_dist=False,
+                add_dataloader_idx=False,
+            )
+            return loss
 
     def test_step(self, batch, batch_idx, dataloader_idx=0):
         # test_step defines the test loop. It is independent of forward
@@ -192,28 +210,18 @@ class ExpTimeseries(pl.LightningModule):
             ds_index=None,
         )
 
+        # dataset = self.trainer.predict_dataloaders[dataloader_idx].dataset
+        # batch_x_raw_date, batch_y_raw_date = dataset.index_to_dates(batch_idx)
+
         return {
             "pred": pred,
             "true": true,
         }
 
-        # return pred, true, batch_idx, dataloader_idx  # , dates.tolist()
-
-    # def on_predict_epoch_end(self, outputs):
-    #     data = []
-    #     for dataloader_idx, data_dl in enumerate(outputs):
-    #         dataloader_data = {}
-    #         for key in data_dl[0]:
-    #             dataloader_data[key] = torch.concat(
-    #                 [data_dl[i][key] for i in range(len(data_dl))]
-    #             )
-    #         # print(dataloader_data.shape)
-    #         data.append(dataloader_data)
-    #         # for batch_idx, data_bi in enumerate(data_dl):
-    #     return data
+    # def on_predict_epoch_end(self, results):
+    #     pass
 
     # def on_predict_end(self):
-    #     pass
     #     pass
 
     def _process_one_batch(
