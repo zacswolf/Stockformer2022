@@ -63,6 +63,22 @@ def setting_from_args(args, ii=0):
     return setting
 
 
+def bbtest_setting(args):
+    time_label = datetime.datetime.now().strftime("%d_%m_%Y_%H_%M_%S")
+    setting = "{}_{}_sl{}_ei{}_dm{}_nh{}_el{}_eb{}".format(
+        time_label,
+        args.model,
+        args.seq_len,
+        args.enc_in,
+        args.d_model,
+        args.n_heads,
+        args.e_layers,
+        args.embed,
+    )
+
+    return setting
+
+
 def write_df(data, out_file, append=""):
     # Save flatten
     og_cols = data.columns.copy()
