@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 
 import torch
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset
 
 # from sklearn.preprocessing import StandardScaler
 
@@ -289,6 +289,7 @@ class Dataset_Custom(Dataset):
             "date_start": None,
             "date_end": None,
             "date_test": None,
+            "date_val": None,
             "embed": None,
         }
         config = dotdict({**defaults, **config})
@@ -305,6 +306,7 @@ class Dataset_Custom(Dataset):
             or (config.date_end is None)
             or (config.date_start < config.date_end)
         ), "date_start isn't before date_end"
+
         assert (
             (config.date_test is None)
             or (config.date_end is None)
@@ -315,6 +317,26 @@ class Dataset_Custom(Dataset):
             or (config.date_start is None)
             or (config.date_test > config.date_start)
         ), "date_test isn't after date_start"
+
+        assert (config.date_val is None) or (
+            config.date_test is not None
+        ), "date_val is used without date_test"
+        assert (
+            (config.date_val is None)
+            or (config.date_test is None)
+            or (config.date_val < config.date_test)
+        ), "date_val isn't before date_test"
+
+        assert (
+            (config.date_val is None)
+            or (config.date_end is None)
+            or (config.date_val < config.date_end)
+        ), "date_val isn't before date_end"
+        assert (
+            (config.date_val is None)
+            or (config.date_start is None)
+            or (config.date_val > config.date_start)
+        ), "date_val isn't after date_start"
 
         assert (config.label_len == 0) or (
             config.inverse_output == config.inverse_pred
@@ -357,14 +379,28 @@ class Dataset_Custom(Dataset):
             cols.remove("date")
         df_raw = df_raw[["date"] + cols + [self.config.target]]
 
-        if self.config.test_date is None:
-            num_train = int(len(df_raw) * 0.7)
-            num_test = int(len(df_raw) * 0.2)
-            num_vali = len(df_raw) - num_train - num_test
-        else:
+        # Define lengths of train, val, and test
+        if self.config.date_test is not None and self.config.date_val is not None:
+            # num_test and num_val are specified
+            num_test = len(df_raw.loc[df_raw["date"] >= self.config.date_test])
+            num_vali = len(
+                df_raw.loc[
+                    (df_raw["date"] >= self.config.date_val)
+                    & (df_raw["date"] < self.config.date_test)
+                ]
+            )
+            num_train = len(df_raw) - num_vali - num_test
+        elif self.config.date_test is not None:
+            # num_val is half of num_test which is specified
             num_test = len(df_raw.loc[(df_raw["date"] >= self.config.date_test)])
             num_vali = num_test // 2
             num_train = len(df_raw) - num_vali - num_test
+        else:
+            # Default split
+            print("Warning: using default dataset split")
+            num_train = int(len(df_raw) * 0.7)
+            num_test = int(len(df_raw) * 0.2)
+            num_vali = len(df_raw) - num_train - num_test
 
         border1s = [
             0,
