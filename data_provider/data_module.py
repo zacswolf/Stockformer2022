@@ -57,26 +57,28 @@ class CustomDataModule(pl.LightningDataModule):
         )
 
     def val_dataloader(self):
-        assert self.batch_size <= len(
-            self.data_val
-        ), "Batch size larger than val data set"
-        return DataLoader(
-            self.data_val,
-            batch_size=self.batch_size,
-            shuffle=False,
-            drop_last=False,
-            num_workers=self.num_workers,
-        )
-
-    def test_dataloader(self):
+        # assert self.batch_size <= len(
+        #     self.data_val
+        # ), f"Batch size larger than val data set, batch size: {self.batch_size}, val size: {len(self.data_val)}"
         return [
             DataLoader(
-                self.data_test,
-                batch_size=self.config.batch_size,
+                self.data_val,
+                batch_size=self.batch_size,
                 shuffle=False,
                 drop_last=False,
                 num_workers=self.num_workers,
             ),
+            DataLoader(
+                self.data_test,
+                batch_size=self.batch_size,
+                shuffle=False,
+                drop_last=False,
+                num_workers=self.num_workers,
+            ),
+        ]
+
+    def test_dataloader(self):
+        return [
             DataLoader(
                 self.data_train,
                 batch_size=self.config.batch_size,
@@ -86,6 +88,13 @@ class CustomDataModule(pl.LightningDataModule):
             ),
             DataLoader(
                 self.data_val,
+                batch_size=self.config.batch_size,
+                shuffle=False,
+                drop_last=False,
+                num_workers=self.num_workers,
+            ),
+            DataLoader(
+                self.data_test,
                 batch_size=self.config.batch_size,
                 shuffle=False,
                 drop_last=False,
