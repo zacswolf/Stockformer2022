@@ -11,3 +11,5 @@ results
 lightning_logs
 .lr_find_*
 .scale_batch_size_*
+
+bbtest_logs
