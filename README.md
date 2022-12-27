@@ -99,7 +99,7 @@ python -u main_informer.py --model <model> --data <data>
 --s_layers <s_layers> --d_ff <d_ff> --factor <factor> --padding <padding>
 --distil --dropout <dropout> --attn <attn> --embed <embed> --activation <activation>
 --output_attention --do_predict --mix --cols <cols> --itr <itr>
---num_workers <num_workers> --train_epochs <train_epochs>
+--num_workers <num_workers> --max_epochs <max_epochs>
 --batch_size <batch_size> --patience <patience> --des <des>
 --learning_rate <learning_rate> --loss <loss> --lradj <lradj>
 --use_amp --inverse --use_gpu <use_gpu> --gpu <gpu> --use_multi_gpu --devices <devices>
@@ -142,7 +142,7 @@ The detailed descriptions about the arguments are as following:
 | cols | Certain cols from the data files as the input features |
 | num_workers | The num_works of Data loader (defaults to 0) |
 | itr | Experiments times (defaults to 2) |
-| train_epochs | Train epochs (defaults to 6) |
+| max_epochs | Train epochs (defaults to 6) |
 | batch_size | The batch size of training input data (defaults to 32) |
 | patience | Early stopping patience (defaults to 3) |
 | learning_rate | Optimizer learning rate (defaults to 0.0001) |

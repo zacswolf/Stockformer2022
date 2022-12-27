@@ -102,7 +102,7 @@ def pt_light_expiriment(
         # "detect_anomaly": True,
         # "overfit_batches": 1,
         "track_grad_norm": 2,
-        "max_epochs": args.train_epochs,
+        "max_epochs": args.max_epochs,
         "accelerator": "gpu",
         "devices": devices,
         "auto_select_gpus": True,
@@ -199,7 +199,7 @@ if __name__ == "__main__":
     args.lradj = None  # What learning rate scheduler to use: ["type3", None, "type1"]
 
     args.optim = "AdamW"  # Adam, AdamW
-    args.train_epochs = 1
+    args.max_epochs = 1
     args.patience = 100  # For early stopping
 
     args.scale = True  # whether to scale to mean 0, var 1
