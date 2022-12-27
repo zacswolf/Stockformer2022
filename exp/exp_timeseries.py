@@ -5,7 +5,7 @@ from models.Basic import MLP
 from models.Lstm import LSTM
 from models.Informer import Informer, InformerStack
 from models.Stockformer import Stockformer
-from utils.stock_metrics import get_stock_loss, LogPctProfitTanh
+from utils.stock_metrics import get_stock_loss, get_stock_algo
 from torchmetrics import MeanSquaredError, MeanAbsoluteError
 
 
@@ -54,7 +54,11 @@ class ExpTimeseries(pl.LightningModule):
                 and self.config.inverse_pred
                 and not self.config.inverse_output
             ), "Can't use stock loss without scale, inverse pred, and not inverse output"
-            return lambda x, y: -LogPctProfitTanh.loss(x, y).mean()
+
+            criterion = get_stock_algo(target_type, stock_loss_mode)
+            print("criterion:", criterion)
+            return lambda x, y: -criterion.loss(x, y).mean()
+            # return lambda x, y: -LogPctProfitTanhV1.loss(x, y).mean()
             # return get_stock_loss(target_type, stock_loss_mode, threshold=0.0)
         elif self.config.loss == "mae":
             assert (

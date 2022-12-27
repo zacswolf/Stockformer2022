@@ -192,7 +192,10 @@ if __name__ == "__main__":
 
     args.batch_size = 128
     args.learning_rate = 0.00001
-    args.loss = "stock_tanh"  # What loss function to use, options:["mse", "mae", "stock_dir", "stock_dir-ns", "stock_tanh"]
+
+    # What loss function to use, options:["mse", "mae", "stock_dir", "stock_dir-ns", "stock_tanh", "stock_tanhv1", ...]
+    # The logic is messy
+    args.loss = "stock_tanhv1"
     args.lradj = None  # What learning rate scheduler to use: ["type3", None, "type1"]
 
     args.optim = "AdamW"  # Adam, AdamW

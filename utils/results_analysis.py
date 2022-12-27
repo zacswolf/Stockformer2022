@@ -2,10 +2,10 @@ import os
 import pandas as pd
 import numpy as np
 
-from utils.ipynb_helpers import read_data
 from utils.stock_metrics import (
     LogPctProfitDirection,
-    LogPctProfitTanh,
+    LogPctProfitTanhV1,
+    LogPctProfitTanhV2,
     apply_threshold_metric,
     pct_direction,
 )
@@ -79,9 +79,21 @@ def get_metrics(
     )
 
     # Percent profit with tanh partial purchase
-    pct_profit_tanh = LogPctProfitTanh.metric(pred_f, true_f, short_filter=None)
-    pct_profit_tanh_nshort = LogPctProfitTanh.metric(pred_f, true_f, short_filter="ns")
-    pct_profit_tanh_oshort = LogPctProfitTanh.metric(pred_f, true_f, short_filter="os")
+    pct_profit_tanhv1 = LogPctProfitTanhV1.metric(pred_f, true_f, short_filter=None)
+    pct_profit_tanhv1_nshort = LogPctProfitTanhV1.metric(
+        pred_f, true_f, short_filter="ns"
+    )
+    pct_profit_tanhv1_oshort = LogPctProfitTanhV1.metric(
+        pred_f, true_f, short_filter="os"
+    )
+
+    pct_profit_tanhv2 = LogPctProfitTanhV2.metric(pred_f, true_f, short_filter=None)
+    pct_profit_tanhv2_nshort = LogPctProfitTanhV2.metric(
+        pred_f, true_f, short_filter="ns"
+    )
+    pct_profit_tanhv2_oshort = LogPctProfitTanhV2.metric(
+        pred_f, true_f, short_filter="os"
+    )
 
     # Optimal percent profit
     pct_profit_dir_opt = LogPctProfitDirection.metric(true_f, true_f)
@@ -91,9 +103,12 @@ def get_metrics(
         "pct_profit_dir": pct_profit_dir,
         "pct_profit_dir_nshort": pct_profit_dir_nshort,
         "pct_profit_dir_oshort": pct_profit_dir_oshort,
-        "pct_profit_tanh": pct_profit_tanh,
-        "pct_profit_tanh_nshort": pct_profit_tanh_nshort,
-        "pct_profit_tanh_oshort": pct_profit_tanh_oshort,
+        "pct_profit_tanhv1": pct_profit_tanhv1,
+        "pct_profit_tanhv1_nshort": pct_profit_tanhv1_nshort,
+        "pct_profit_tanhv1_oshort": pct_profit_tanhv1_oshort,
+        "pct_profit_tanhv2": pct_profit_tanhv2,
+        "pct_profit_tanhv2_nshort": pct_profit_tanhv2_nshort,
+        "pct_profit_tanhv2_oshort": pct_profit_tanhv2_oshort,
         "pct_excluded": (len(pred) - len(pred_f)) / len(pred),
         "pct_excluded_nshort": (len(pred) - len(pred_f[pred_f > 0])) / len(pred),
         "pct_excluded_oshort": (len(pred) - len(pred_f[pred_f < 0])) / len(pred),
