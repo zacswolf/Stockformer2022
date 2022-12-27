@@ -12,7 +12,6 @@ from pytorch_lightning.loggers import TensorBoardLogger
 from pt_light import pt_light_expiriment
 from utils.ipynb_helpers import read_data, bbtest_setting
 from utils.results_analysis import get_metrics, open_results
-from utils.stock_metrics import LogPctProfitDirection, LogPctProfitTanh, pct_direction
 from utils.tools import dotdict
 from utils.parallel import NoDaemonProcessPool
 

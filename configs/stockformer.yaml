@@ -32,7 +32,7 @@ inverse_output: false
 inverse_pred: true
 label_len: 0
 learning_rate: 1.0e-05
-loss: stock_tanh
+loss: stock_tanhv1
 lradj: null
 mix: false
 model: stockformer
