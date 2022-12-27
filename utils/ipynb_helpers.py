@@ -64,7 +64,7 @@ def setting_from_args(args, ii=0):
 
 
 def bbtest_setting(args):
-    time_label = datetime.datetime.now().strftime("%d_%m_%Y_%H_%M_%S")
+    time_label = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
     setting = "{}_{}_sl{}_ei{}_dm{}_nh{}_el{}_eb{}".format(
         time_label,
         args.model,
