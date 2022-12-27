@@ -13,7 +13,7 @@ cols:
 - ENB_logpctchange
 - SLB_logpctchange
 d_ff: 2048
-d_model: 256
+d_model: 512
 data_path: full_1h.csv
 date_end: '2020-01-01'
 date_start: '2012-01-01'
@@ -36,7 +36,7 @@ loss: stock_tanhv1
 lradj: null
 mix: false
 model: stockformer
-n_heads: 256
+n_heads: 512
 no_early_stop: false
 no_scale_mean: true
 optim: AdamW
@@ -47,4 +47,4 @@ root_path: ./data/stock/
 scale: true
 seq_len: 16
 target: WTI_logpctchange
-train_epochs: 250
+max_epochs: 100
