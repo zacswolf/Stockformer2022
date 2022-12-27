@@ -73,7 +73,11 @@ def pt_light_expiriment(
     callbacks.append(PredTrueDateWriter("result", "epoch"))
 
     # Stochastic Weight Averaging to improve generalization
-    callbacks.append(StochasticWeightAveraging(swa_lrs=1e-2, device=None))
+    # TODO: Research this more
+    # callbacks.append(
+    #     StochasticWeightAveraging(swa_lrs=1e-5, swa_epoch_start=.8, device=None)
+    # )
+    # swa_lrs=1e-5 or lr
 
     # Log learning rate
     callbacks.append(LearningRateMonitor("epoch"))
