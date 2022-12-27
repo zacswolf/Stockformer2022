@@ -28,7 +28,7 @@ def pt_light_expiriment(
     print(args)
 
     strategy = "dp"  # ["ddp", "ddp_spawn", "ddp_notebook", "ddp_fork", None]
-    num_workers = 2  # os.cpu_count() * (strategy != "ddp_spawn")
+    num_workers = 0  # os.cpu_count() * (strategy != "ddp_spawn")
 
     # pl.seed_everything(seed=123, workers=True)
 
@@ -189,6 +189,7 @@ if __name__ == "__main__":
     args.distil = False  # whether to use distilling in encoder
     args.output_attention = False  # whether to output attention in encoder
     args.mix = False  # whether to use mixed attention
+    args.ln_mode = "post"
 
     args.batch_size = 128
     args.learning_rate = 0.00001

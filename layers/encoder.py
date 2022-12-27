@@ -28,7 +28,15 @@ class ConvLayer(nn.Module):
 
 
 class EncoderLayer(nn.Module):
-    def __init__(self, attention, d_model, d_ff=None, dropout=0.1, activation="relu"):
+    def __init__(
+        self,
+        attention,
+        d_model,
+        d_ff=None,
+        dropout=0.1,
+        activation="relu",
+        ln_mode="post",
+    ):
         super(EncoderLayer, self).__init__()
         d_ff = d_ff or 4 * d_model
         self.attention = attention
@@ -38,6 +46,7 @@ class EncoderLayer(nn.Module):
         self.norm2 = nn.LayerNorm(d_model)
         self.dropout = nn.Dropout(dropout)
         self.activation = F.relu if activation == "relu" else F.gelu
+        self.ln_mode = ln_mode
 
     def forward(self, x, attn_mask=None):
         # x [B, L, D]
@@ -45,14 +54,35 @@ class EncoderLayer(nn.Module):
         #     x, x, x,
         #     attn_mask = attn_mask
         # ))
-        new_x, attn = self.attention(x, x, x, attn_mask=attn_mask)
-        x = x + self.dropout(new_x)
 
-        y = x = self.norm1(x)
-        y = self.dropout(self.activation(self.conv1(y.transpose(-1, 1))))
-        y = self.dropout(self.conv2(y).transpose(-1, 1))
+        if self.ln_mode == "post":
+            # Post layer norm: original transformer paper
+            # Theoretically has better performance than pre layer norm
+            new_x, attn = self.attention(x, x, x, attn_mask=attn_mask)
+            x = x + self.dropout(new_x)
 
-        return self.norm2(x + y), attn
+            y = x = self.norm1(x)
+            y = self.dropout(self.activation(self.conv1(y.transpose(-1, 1))))
+            y = self.dropout(self.conv2(y).transpose(-1, 1))
+            output = self.norm2(x + y)
+            return output, attn
+        elif self.ln_mode == "pre":
+            # Pre layer norm: popular variant
+            # Theoretically is more stable than post layer norm
+            # https://arxiv.org/abs/2002.04745
+            new_x = self.norm1(x)
+            new_x, attn = self.attention(new_x, new_x, new_x, attn_mask=attn_mask)
+            x = x + self.dropout(new_x)
+
+            y = self.norm2(x)
+
+            y = self.dropout(self.activation(self.conv1(y.transpose(-1, 1))))
+            y = self.dropout(self.conv2(y).transpose(-1, 1))
+
+            output = x + y
+            return output, attn
+
+        raise Exception(f"Invalid ln_mode: {self.ln_mode}")
 
 
 class Encoder(nn.Module):
