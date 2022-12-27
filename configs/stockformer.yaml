@@ -42,6 +42,7 @@ no_scale_mean: true
 optim: AdamW
 output_attention: false
 patience: 100
+ln_mode: "pre"
 pred_len: 1
 root_path: ./data/stock/
 scale: true

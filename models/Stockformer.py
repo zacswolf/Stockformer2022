@@ -42,6 +42,7 @@ class Stockformer(nn.Module):
                     config.d_ff,
                     dropout=config.dropout,
                     activation=config.activation,
+                    ln_mode=config.ln_mode,
                 )
                 for l in range(config.e_layers)
             ],
