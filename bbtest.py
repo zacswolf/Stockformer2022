@@ -125,7 +125,7 @@ def run_bbtest(
 
 
 if __name__ == "__main__":
-    config_file = "configs/stockformer.yaml"
+    config_file = "configs/stockformer/general.yaml"
 
     # The duration of the test set, also the duration we slide with
     test_duration = relativedelta(months=1)
