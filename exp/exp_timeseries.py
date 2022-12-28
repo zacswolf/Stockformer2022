@@ -281,12 +281,13 @@ class ExpTimeseries(pl.LightningModule):
             optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
         # optimizer = torch.optim.SGD(self.parameters(), lr=self.learning_rate)
 
+        # Learning rate scheduler
         if self.config.lradj == "type1":
             lmbda = lambda epoch: 0.5
             scheduler = torch.optim.lr_scheduler.MultiplicativeLR(
                 optimizer, lr_lambda=lmbda, verbose=True
             )
-        elif self.config.lradj == "type3":
+        elif self.config.lradj == "type2":
             scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
                 optimizer,
                 factor=0.5,
@@ -299,6 +300,19 @@ class ExpTimeseries(pl.LightningModule):
             scheduler = {
                 "scheduler": scheduler,
                 "interval": "epoch",  # called after each training step
+                "monitor": "val_loss",
+            }
+        elif self.config.lradj == "type3":
+            scheduler = torch.optim.lr_scheduler.OneCycleLR(
+                optimizer,
+                max_lr=self.config.learning_rate,
+                steps_per_epoch=len(self.trainer.datamodule.data_train)
+                // self.config.batch_size,  # Would be nicer to use self.trainer.train_dataloader.dataset but there is a pl bug
+                epochs=self.config.max_epochs,
+            )
+            scheduler = {
+                "scheduler": scheduler,
+                "interval": "step",  # called after each training step
                 "monitor": "val_loss",
             }
         else:

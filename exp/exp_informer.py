@@ -81,7 +81,7 @@ class Exp_Informer(Exp_Basic):
             scheduler = torch.optim.lr_scheduler.MultiplicativeLR(
                 optimizer, lr_lambda=lmbda, verbose=True
             )
-        elif self.args.lradj == "type3":
+        elif self.args.lradj == "type2":
             scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
                 optimizer,
                 factor=0.5,
