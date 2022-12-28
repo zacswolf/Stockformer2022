@@ -122,7 +122,7 @@ class DataEmbedding(nn.Module):
         d_model,
         embed_type="fixed",
         freq="h",
-        dropout=0.1,
+        dropout_emb=0.01,
         position_embedding=True,
     ):
         super(DataEmbedding, self).__init__()
@@ -147,7 +147,7 @@ class DataEmbedding(nn.Module):
             PositionalEmbedding(d_model=d_model) if position_embedding else lambda x: 0
         )
 
-        self.dropout = nn.Dropout(p=dropout)
+        self.dropout = nn.Dropout(p=dropout_emb)
 
     def forward(self, x, x_mark):
         x = (

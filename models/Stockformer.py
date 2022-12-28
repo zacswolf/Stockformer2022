@@ -19,7 +19,7 @@ class Stockformer(nn.Module):
 
         # Embedding
         self.enc_embedding = DataEmbedding(
-            config.enc_in, config.d_model, config.embed, config.freq, config.dropout
+            config.enc_in, config.d_model, config.embed, config.freq, config.dropout_emb
         )
         # Attention
         Attn = ProbAttention if config.attn == "prob" else FullAttention
@@ -108,7 +108,7 @@ class StockformerVanilla(nn.Module):
 
         # Embedding
         self.enc_embedding = DataEmbedding(
-            config.enc_in, config.d_model, config.embed, config.freq, config.dropout
+            config.enc_in, config.d_model, config.embed, config.freq, config.dropout_emb
         )
 
         # TODO: Make sure this is correct
