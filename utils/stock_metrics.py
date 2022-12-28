@@ -1,5 +1,4 @@
 import torch
-from torchmetrics import Metric
 import numpy as np
 
 
@@ -65,12 +64,6 @@ def apply_short_filter(output, raw, short_filter: None | str):
     elif short_filter == "os":
         return raw[output < 0]
     raise Exception(f"Invalid short filter: {short_filter}")
-
-
-# def apply_threshold_loss(output, other, threshold=0.0002):
-#     output_tresh = output[torch.abs(output) >= threshold]
-#     other = other[torch.abs(output) >= threshold]
-#     return output_tresh, other
 
 
 def apply_threshold_metric(output, other, threshold=0.0002):
@@ -279,72 +272,3 @@ class LogPctProfitTanhV3(StockAlgo):
         raw = log_pct_change * ((1 - mult_min) * at_sigmoid_bounds + mult_min)
 
         return np.exp(np.cumsum(apply_short_filter(output, raw, short_filter)))
-
-
-def get_stock_loss(target_type, stock_loss_mode, threshold=0.0) -> Metric:
-    if target_type == "pctchange":
-        return PctProfit(target_type, stock_loss_mode, threshold)
-    elif target_type == "logpctchange":
-        return LogPctProfit(target_type, stock_loss_mode, threshold)
-
-
-class PctProfit(Metric):
-    @property
-    def is_differentiable(self) -> bool:
-        return True
-
-    def __init__(self, target_type, stock_loss_mode, threshold=0.0):
-        super().__init__()
-        assert target_type == "pctchange"
-
-        self.add_state(
-            "pct_profit", default=torch.tensor(1, dtype=float), dist_reduce_fx="mean"
-        )
-
-        self.loss_fnt = get_stock_algo(target_type, stock_loss_mode)
-        self.short_filter = get_short_filter(stock_loss_mode)
-
-    def update(self, preds: torch.Tensor, target: torch.Tensor):
-        assert preds.shape == target.shape
-
-        self.pct_profit *= self.loss_fnt.loss(
-            preds, target, short_filter=self.short_filter
-        ).prod()
-
-    def compute(self):
-        return -self.pct_profit
-
-
-class LogPctProfit(Metric):
-    @property
-    def is_differentiable(self) -> bool:
-        return True
-
-    def __init__(self, target_type, stock_loss_mode, threshold=0.0):
-        super().__init__()
-        assert target_type == "logpctchange"
-
-        self.add_state(
-            "log_pct_profit", default=torch.tensor(0, dtype=float), dist_reduce_fx="sum"
-        )
-        # self.add_state("n_observations", default=torch.tensor(0), dist_reduce_fx="sum")
-
-        self.threshold = threshold
-
-        self.loss_fnt = get_stock_algo(target_type, stock_loss_mode)
-        self.short_filter = get_short_filter(stock_loss_mode)
-
-    def update(self, preds: torch.Tensor, target: torch.Tensor):
-        assert preds.shape == target.shape
-
-        self.log_pct_profit += self.loss_fnt.loss(
-            preds, target, short_filter=self.short_filter
-        ).sum()
-
-        # self.n_observations += preds.numel()
-
-    def compute(self):
-        return -self.log_pct_profit
-
-    def get_stock_metric(self):
-        return self.loss_fnt

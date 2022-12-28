@@ -5,7 +5,7 @@ from models.Basic import MLP
 from models.Lstm import LSTM
 from models.Informer import Informer, InformerStack
 from models.Stockformer import Stockformer
-from utils.stock_metrics import get_stock_loss, get_stock_algo
+from utils.stock_metrics import get_stock_algo
 from torchmetrics import MeanSquaredError, MeanAbsoluteError
 
 
