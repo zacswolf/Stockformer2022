@@ -74,10 +74,13 @@ def run_bbtest(
         else:
             inputs.append(dict(args))
 
+    # NOTE: the [-8:] should technically not be used here for a true bbtest
+    # However, just having 1 batch of runs is way faster
     inputs = [(idx, args, setting) for idx, args in enumerate(inputs)][-8:]
 
     pool = NoDaemonProcessPool(processes=len(GPU_LIST))
 
+    # TODO: look into async_map
     outputs = pool.map(call_expiriment, inputs)
     print("OUTPUTS:\n\n\n", outputs)
 

@@ -47,7 +47,7 @@ patience: 100
 pred_len: 1
 root_path: ./data/stock/
 scale: true
-seed: None
+seed: null
 seq_len: 16
 target: WTI_logpctchange
 max_epochs: 20
