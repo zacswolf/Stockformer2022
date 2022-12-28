@@ -23,10 +23,10 @@ class Informer(nn.Module):
 
         # Encoding
         self.enc_embedding = DataEmbedding(
-            config.enc_in, config.d_model, config.embed, config.freq, config.dropout
+            config.enc_in, config.d_model, config.embed, config.freq, config.dropout_emb
         )
         self.dec_embedding = DataEmbedding(
-            config.dec_in, config.d_model, config.embed, config.freq, config.dropout
+            config.dec_in, config.d_model, config.embed, config.freq, config.dropout_emb
         )
         # Attention
         Attn = ProbAttention if config.attn == "prob" else FullAttention
@@ -137,10 +137,10 @@ class InformerStack(nn.Module):
 
         # Encoding
         self.enc_embedding = DataEmbedding(
-            config.enc_in, config.d_model, config.embed, config.freq, config.dropout
+            config.enc_in, config.d_model, config.embed, config.freq, config.dropout_emb
         )
         self.dec_embedding = DataEmbedding(
-            config.dec_in, config.d_model, config.embed, config.freq, config.dropout
+            config.dec_in, config.d_model, config.embed, config.freq, config.dropout_emb
         )
         # Attention
         Attn = ProbAttention if config.attn == "prob" else FullAttention

@@ -21,7 +21,8 @@ date_test: '2019-06-01'
 des: full_1h
 distil: false
 dont_shuffle_train: true
-dropout: 0.05
+dropout: 0.2
+dropout_emb: 0.0
 e_layers: 12
 embed: null
 enc_in: 9
