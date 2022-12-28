@@ -32,6 +32,7 @@ inverse_output: false
 inverse_pred: true
 label_len: 0
 learning_rate: 1.0e-05
+ln_mode: "post"
 loss: stock_tanhv1
 lradj: null
 mix: false
@@ -42,10 +43,10 @@ no_scale_mean: true
 optim: AdamW
 output_attention: false
 patience: 100
-ln_mode: "pre"
 pred_len: 1
 root_path: ./data/stock/
 scale: true
+seed: None
 seq_len: 16
 target: WTI_logpctchange
 max_epochs: 100

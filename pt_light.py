@@ -30,7 +30,8 @@ def pt_light_expiriment(
     strategy = "dp"  # ["ddp", "ddp_spawn", "ddp_notebook", "ddp_fork", None]
     num_workers = 0  # os.cpu_count() * (strategy != "ddp_spawn")
 
-    # pl.seed_everything(seed=123, workers=True)
+    if args.seed is not None:
+        pl.seed_everything(seed=args.seed, workers=True)
 
     # Create Data Module
     data_module = CustomDataModule(args, num_workers)
@@ -156,6 +157,8 @@ if __name__ == "__main__":
 
     args.data_path = "full_1h.csv"  # data file
     args.freq = "h"  # freq for time features encoding, options:[s:secondly, t:minutely, h:hourly, d:daily, b:business days, w:weekly, m:monthly], you can also use more detailed freq like 15min or 3h
+
+    args.seed = None  # Seed to control randomness, None for random seed
 
     args.features = "MS"  # forecasting task, options:[M, S, MS]; M:multivariate predict multivariate, S:univariate predict univariate, MS:multivariate predict univariate
     args.target = "WTI_logpctchange"  # target feature in S or MS task
