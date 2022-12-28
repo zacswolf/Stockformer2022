@@ -188,7 +188,7 @@ if __name__ == "__main__":
     args.e_layers = 12  # num of encoder layers
     args.d_ff = 2048  # dimension of fcn in model
     args.dropout = 0.05  # dropout
-    args.dropout_emb = 0.0 # dropout for embedding
+    args.dropout_emb = 0.0  # dropout for embedding
     args.embed = None  # time features encoding, options:[timeF, fixed, learned, None]
     args.activation = "gelu"  # activation
 
@@ -205,7 +205,9 @@ if __name__ == "__main__":
     # What loss function to use, options:["mse", "mae", "stock_dir", "stock_dir-ns", "stock_tanh", "stock_tanhv1", ...]
     # The logic is messy
     args.loss = "stock_tanhv1"
-    args.lradj = None  # What learning rate scheduler to use: ["type3", None, "type1"]
+    args.lradj = (
+        None  # What learning rate scheduler to use: ["type2", "type3", None, "type1"]
+    )
 
     args.optim = "AdamW"  # Adam, AdamW
     args.max_epochs = 1
