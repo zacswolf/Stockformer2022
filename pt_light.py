@@ -235,7 +235,7 @@ if __name__ == "__main__":
     # args.load_model_path = "stockformer_custom_ftMS_sl16_ll4_pl1_ei12_di12_co1_iFalse_dm512_nh8_el12_dl4_df2048_atfull_fc5_ebtimeF_dtFalse_mxFalse_pretrain_full_1h_0/checkpoint-pretrain.pth"
 
     # import yaml
-    # with open("configs/stockformer.yaml", "w") as file:
+    # with open("configs/stockformer/example.yaml", "w") as file:
     #     yaml.dump(dict(args), file)
 
     log_dir, test_loop_output = pt_light_expiriment(args, [0])
