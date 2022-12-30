@@ -12,7 +12,8 @@ from utils.stock_metrics import (
 from utils.tools import dotdict
 
 
-def open_results(log_dir, args, df):
+def open_results(log_dir: str, args: dotdict, df: pd.DataFrame) -> dict:
+    """Function to open an experiment and return its tpd_dict"""
     tpd_dict = {}
     for flag in ["train", "val", "test"]:
         device = 0
@@ -62,6 +63,7 @@ def open_results(log_dir, args, df):
 def get_metrics(
     args: dotdict, pred: np.ndarray, true: np.ndarray, thresh: float = 0.0
 ) -> dict:
+    """Function to return metrics based on outputs and labels"""
     # Filter by a threshold
     pred_f, true_f = apply_threshold_metric(pred, true, thresh)
     # df_f = df.loc[date[np.abs(pred) >= thresh]]

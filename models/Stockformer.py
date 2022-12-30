@@ -55,6 +55,7 @@ class Stockformer(nn.Module):
         # self.encoder = nn.TransformerEncoder(self.encoder_layer, num_layers=config.e_layers)
 
         self.final = nn.Linear(config.d_model * config.seq_len, config.c_out, bias=True)
+        # nn.init.xavier_normal_(self.final.weight, gain=nn.init.calculate_gain("tanh"))
         # self.final = nn.Sequential(*[
         #     nn.Linear(config.d_model * config.seq_len, config.d_model * 4, bias=True),
         #     nn.GELU(),
