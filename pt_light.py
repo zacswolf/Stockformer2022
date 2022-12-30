@@ -186,10 +186,10 @@ if __name__ == "__main__":
     args.d_model = 512  # dimension of model; also the dimension of the token embeddings
     args.n_heads = 512  # num of attention heads
     args.e_layers = 12  # num of encoder layers
-    args.d_ff = 2048  # dimension of fcn in model
-    args.dropout = 0.05  # dropout
+    args.d_ff = 4096  # dimension of fcn in model
+    args.dropout = 0.5  # dropout
     args.dropout_emb = 0.0  # dropout for embedding
-    args.embed = None  # time features encoding, options:[timeF, fixed, learned, None]
+    args.embed = None  # time features encoding, options:[timeF, fixed, learned, None, time2vec_add, time2vec_app]
     args.activation = "gelu"  # activation
 
     args.attn = "full"  # attention used in encoder, options:[prob, full]

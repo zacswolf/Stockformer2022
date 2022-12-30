@@ -115,6 +115,26 @@ class TimeFeatureEmbedding(nn.Module):
         return self.embed(x)
 
 
+class Time2Vec(nn.Module):
+    def __init__(self, time_emb_dim, freq="h"):
+        super(Time2Vec, self).__init__()
+        freq_map = {"h": 4, "t": 5, "s": 6, "m": 1, "a": 1, "w": 2, "d": 3, "b": 3}
+        time_feat_dim = freq_map[freq]
+
+        self.output_dim = time_emb_dim
+
+        self.out_features = time_emb_dim
+
+        self.linear_periodic = nn.Linear(time_feat_dim, time_emb_dim - 1)
+        self.linear_non_periodic = nn.Linear(time_feat_dim, 1)
+
+    def forward(self, x):
+        non_periodic = self.linear_non_periodic(x.float())
+        periodic = torch.sin(self.linear_periodic(x.float()))
+        out = torch.cat([non_periodic, periodic], -1)
+        return out
+
+
 class DataEmbedding(nn.Module):
     def __init__(
         self,
@@ -124,11 +144,20 @@ class DataEmbedding(nn.Module):
         freq="h",
         dropout_emb=0.01,
         position_embedding=True,
+        emb_t2v_app_dim=32,
     ):
         super(DataEmbedding, self).__init__()
 
+        self.append_time_emb = embed_type == "time2vec_app"
+
         if embed_type is not None:
-            assert embed_type in ["fixed", "learned", "timeF"], "Invalid embed_type"
+            assert embed_type in [
+                "fixed",
+                "learned",
+                "timeF",
+                "time2vec_add",
+                "time2vec_app",
+            ], "Invalid embed_type"
             if embed_type == "fixed" or embed_type == "learned":
                 self.temporal_embedding = TemporalEmbedding(
                     d_model=d_model, embed_type=embed_type, freq=freq
@@ -137,7 +166,19 @@ class DataEmbedding(nn.Module):
                 self.temporal_embedding = TimeFeatureEmbedding(
                     d_model=d_model, embed_type=embed_type, freq=freq
                 )
-            # TODO: Impliment Time2Vec
+            elif embed_type == "time2vec_add":
+                # Time2Vec time embedding add elementwise
+                self.temporal_embedding = Time2Vec(time_emb_dim=d_model, freq=freq)
+            elif embed_type == "time2vec_app":
+                # Time2Vec time embedding appended
+                assert (
+                    emb_t2v_app_dim is not None
+                ), "Need to provide the emb_t2v_app_dim argument"
+                assert emb_t2v_app_dim > 0 and emb_t2v_app_dim < d_model
+                self.temporal_embedding = Time2Vec(
+                    time_emb_dim=emb_t2v_app_dim, freq=freq
+                )
+                d_model -= emb_t2v_app_dim
         else:
             self.temporal_embedding = lambda _: 0
 
@@ -150,9 +191,15 @@ class DataEmbedding(nn.Module):
         self.dropout = nn.Dropout(p=dropout_emb)
 
     def forward(self, x, x_mark):
-        x = (
-            self.value_embedding(x)
-            + self.position_embedding(x)
-            + self.temporal_embedding(x_mark)
-        )
-        return self.dropout(x)
+        if self.append_time_emb:
+            x = self.value_embedding(x) + self.position_embedding(x)
+            x_drop = self.dropout(x)
+            time_emb = self.temporal_embedding(x_mark)
+            return torch.concat([x_drop, time_emb], -1)
+        else:
+            x = (
+                self.value_embedding(x)
+                + self.position_embedding(x)
+                + self.temporal_embedding(x_mark)
+            )
+            return self.dropout(x)

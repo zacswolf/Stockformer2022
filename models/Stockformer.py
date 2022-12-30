@@ -19,7 +19,12 @@ class Stockformer(nn.Module):
 
         # Embedding
         self.enc_embedding = DataEmbedding(
-            config.enc_in, config.d_model, config.embed, config.freq, config.dropout_emb
+            config.enc_in,
+            config.d_model,
+            config.embed,
+            config.freq,
+            config.dropout_emb,
+            emb_t2v_app_dim=config.emb_t2v_app_dim,
         )
         # Attention
         Attn = ProbAttention if config.attn == "prob" else FullAttention
@@ -56,6 +61,7 @@ class Stockformer(nn.Module):
 
         self.final = nn.Linear(config.d_model * config.seq_len, config.c_out, bias=True)
         # nn.init.xavier_normal_(self.final.weight, gain=nn.init.calculate_gain("tanh"))
+
         # self.final = nn.Sequential(*[
         #     nn.Linear(config.d_model * config.seq_len, config.d_model * 4, bias=True),
         #     nn.GELU(),

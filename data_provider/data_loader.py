@@ -344,7 +344,14 @@ class Dataset_Custom(Dataset):
 
         self.config = config
         self.flag = flag
-        self.timeenc = 0 if config.embed != "timeF" else 1
+
+        # self.timeenc = 0 if config.embed != "timeF" else 1
+        if config.embed == "timeF":
+            self.timeenc = 1
+        elif config.embed == "time2vec_add" or config.embed == "time2vec_app":
+            self.timeenc = 2
+        else:
+            self.timeenc = 0
 
         type_map = {"train": 0, "val": 1, "test": 2}
         self.set_type = type_map[flag]
@@ -427,8 +434,8 @@ class Dataset_Custom(Dataset):
         df_stamp = df_raw[["date"]][border1:border2]
         df_stamp["date"] = pd.to_datetime(df_stamp.date)
         self.raw_dates = df_stamp.date.to_numpy(dtype=np.datetime64)
-        data_stamp = time_features(
-            df_stamp, timeenc=self.timeenc, freq=self.config.freq
+        self.data_stamp = np.float32(
+            time_features(df_stamp, timeenc=self.timeenc, freq=self.config.freq)
         )
 
         self.data_x = data[border1:border2]
@@ -436,7 +443,6 @@ class Dataset_Custom(Dataset):
             self.data_y = torch.from_numpy(df_data.values[border1:border2])
         else:
             self.data_y = data[border1:border2]
-        self.data_stamp = data_stamp
 
     def __getitem__(self, index):
         s_begin = index
@@ -522,7 +528,13 @@ class Dataset_Pred(Dataset):
 
         self.config = config
         self.flag = flag
-        self.timeenc = 0 if config.embed != "timeF" else 1
+        # self.timeenc = 0 if config.embed != "timeF" else 1
+        if config.embed == "timeF":
+            self.timeenc = 1
+        elif config.embed == "time2vec_add" or config.embed == "time2vec_app":
+            self.timeenc = 2
+        else:
+            self.timeenc = 0
 
         self.__read_data__()
 
@@ -577,16 +589,15 @@ class Dataset_Pred(Dataset):
         )
         self.raw_dates = df_stamp.date.to_numpy(dtype=np.datetime64)
         # TODO: What is the deal with .freq[-1:]
-        data_stamp = time_features(
+        self.data_stamp = np.float32(time_features(
             df_stamp, timeenc=self.timeenc, freq=self.config.freq[-1:]
-        )
+        ))
 
         self.data_x = data[border1:border2]
         if self.config.inverse:
             self.data_y = df_data.values[border1:border2]
         else:
             self.data_y = data[border1:border2]
-        self.data_stamp = data_stamp
 
     def __getitem__(self, index):
         s_begin = index

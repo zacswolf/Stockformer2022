@@ -12,8 +12,8 @@ cols:
 - EOG_logpctchange
 - ENB_logpctchange
 - SLB_logpctchange
-d_ff: 2048
-d_model: 256
+d_ff: 4096 #2048
+d_model: 512
 data_path: full_1h.csv
 date_end: '2020-01-01'
 date_start: '2012-01-01'
@@ -21,10 +21,11 @@ date_test: '2019-06-01'
 des: full_1h
 distil: false
 dont_shuffle_train: true
-dropout: 0.2
+dropout: 0.5
 dropout_emb: 0.0
 e_layers: 12
-embed: null
+emb_t2v_app_dim: 16
+embed: time2vec_app
 enc_in: 9
 factor: 5
 features: MS
@@ -33,12 +34,12 @@ inverse_output: false
 inverse_pred: true
 label_len: 0
 learning_rate: 1.0e-05
-ln_mode: "post"
+ln_mode: post
 loss: stock_tanhv1
 lradj: type3
 mix: false
 model: stockformer
-n_heads: 256
+n_heads: 512
 no_early_stop: false
 no_scale_mean: true
 optim: AdamW
