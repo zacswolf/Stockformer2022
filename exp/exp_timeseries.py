@@ -7,6 +7,7 @@ from models.Informer import Informer, InformerStack
 from models.Stockformer import Stockformer
 from utils.stock_metrics import get_stock_algo
 from torchmetrics import MeanSquaredError, MeanAbsoluteError
+from pytorch_forecasting.optim import Ranger
 
 
 class ExpTimeseries(pl.LightningModule):
@@ -277,6 +278,8 @@ class ExpTimeseries(pl.LightningModule):
     def configure_optimizers(self):
         if self.config.optim == "AdamW":
             optimizer = torch.optim.AdamW(self.parameters(), lr=self.learning_rate)
+        elif self.config.optim == "Ranger":
+            optimizer = Ranger(self.parameters(), lr=self.learning_rate)
         else:
             optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
         # optimizer = torch.optim.SGD(self.parameters(), lr=self.learning_rate)
