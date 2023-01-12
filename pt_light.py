@@ -245,7 +245,10 @@ if __name__ == "__main__":
 
     metrics = {}
     for data_group in tpd_dict:
-        true, pred, date = tpd_dict[data_group]
+        true = tpd_dict[data_group]["trues"]
+        pred = tpd_dict[data_group]["preds"]
+        date = tpd_dict[data_group]["dates"]
+        
         metrics[data_group] = get_metrics(args, pred, true, 0.0)
 
         print(data_group, end="\t")

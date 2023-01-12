@@ -11,7 +11,7 @@ from pytorch_lightning.loggers import TensorBoardLogger
 
 from pt_light import pt_light_expiriment
 from utils.ipynb_helpers import read_data, bbtest_setting
-from utils.results_analysis import get_metrics, open_results
+from utils.results_analysis import get_tuned_metrics, open_results
 from utils.tools import dotdict
 from utils.parallel import NoDaemonProcessPool
 
@@ -94,36 +94,44 @@ def run_bbtest(
     ## Open, Process, and Aggregate Test Data
     df = read_data(os.path.join(args.root_path, args.data_path))
 
-    trues = []
-    preds = []
-    dates = []
-    test_loop_outputs = []
-    for log_dir, args, test_loop_output in outputs:
-        args = dotdict(args)
-        tpd_dict = open_results(log_dir, args, df)
+    bb_tpd_dict = {}
+    for data_group in ["train", "val", "test"]:
+        trues = []
+        preds = []
+        dates = []
+        test_loop_outputs = []
+        for log_dir, args, test_loop_output in outputs:
+            args = dotdict(args)
+            tpd_dict = open_results(log_dir, args, df)
 
-        true, pred, date = tpd_dict["test"]
-        trues.append(true)
-        preds.append(pred)
-        dates.append(date)
-        test_loop_outputs.append(test_loop_output)
+            true, pred, date = tpd_dict[data_group]
+            true = tpd_dict[data_group]["trues"]
+            pred = tpd_dict[data_group]["preds"]
+            date = tpd_dict[data_group]["dates"]
+            trues.append(true)
+            preds.append(pred)
+            dates.append(date)
+            test_loop_outputs.append(test_loop_output)
 
-    trues = np.concatenate(trues)
-    preds = np.concatenate(preds)
-    dates = dates[0].union_many(dates[1:])
+        trues = np.concatenate(trues)
+        preds = np.concatenate(preds)
+        dates = dates[0].union_many(dates[1:])
 
-    results = {"trues": trues, "preds": preds, "dates": dates}
-    with open(os.path.join(full_test_dir, "results.pickle"), "wb") as handle:
-        pickle.dump(results, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        bb_tpd_dict[data_group] = {"trues": trues, "preds": preds, "dates": dates}
+
+    with open(os.path.join(full_test_dir, "tpd_dict.pickle"), "wb") as handle:
+        pickle.dump(bb_tpd_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
     #### Analyze
 
-    metrics = get_metrics(args, preds, trues, 0.0)
-
-    pprint(metrics)
+    best_thresh, best_thresh_metrics, zero_thresh_metrics = get_tuned_metrics(
+        args, bb_tpd_dict
+    )
+    metrics = {0.0: zero_thresh_metrics, best_thresh: best_thresh_metrics}
     with open(os.path.join(full_test_dir, "metrics.json"), "w") as f:
         json.dump(metrics, f, indent=2)
 
+    print("bbtest logged in:", full_test_dir)
     return metrics
 
 
