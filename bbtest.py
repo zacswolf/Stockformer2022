@@ -78,46 +78,43 @@ def run_bbtest(
     # However, just having 1 batch of runs is way faster
     inputs = [(idx, args, setting) for idx, args in enumerate(inputs)][-8:]
 
-    pool = NoDaemonProcessPool(processes=len(GPU_LIST))
-
-    # TODO: look into async_map
-    outputs = pool.map(call_expiriment, inputs)
-    print("OUTPUTS:\n\n\n", outputs)
-
-    pool.close()
-    pool.join()
-
-    print(outputs)
-
-    ###### Analysis
-
-    ## Open, Process, and Aggregate Test Data
     df = read_data(os.path.join(args.root_path, args.data_path))
 
-    bb_tpd_dict = {}
-    for data_group in ["train", "val", "test"]:
-        trues = []
-        preds = []
-        dates = []
-        test_loop_outputs = []
-        for log_dir, args, test_loop_output in outputs:
+    with NoDaemonProcessPool(processes=len(GPU_LIST)) as pool:
+        outputs = pool.map_async(call_expiriment, inputs)
+
+        # Open, Process, and Aggregate Test Data
+        bb_tpd_dict = {
+            "train": {"trues": [], "preds": [], "dates": []},
+            "val": {"trues": [], "preds": [], "dates": []},
+            "test": {"trues": [], "preds": [], "dates": []},
+        }
+        for log_dir, args, test_loop_output in outputs.get():
             args = dotdict(args)
+
+            test_loop_outputs = []
+    for data_group in ["train", "val", "test"]:
             tpd_dict = open_results(log_dir, args, df)
 
-            true, pred, date = tpd_dict[data_group]
             true = tpd_dict[data_group]["trues"]
             pred = tpd_dict[data_group]["preds"]
             date = tpd_dict[data_group]["dates"]
-            trues.append(true)
-            preds.append(pred)
-            dates.append(date)
+                bb_tpd_dict[data_group]["trues"].append(true)
+                bb_tpd_dict[data_group]["preds"].append(pred)
+                bb_tpd_dict[data_group]["dates"].append(date)
             test_loop_outputs.append(test_loop_output)
 
-        trues = np.concatenate(trues)
-        preds = np.concatenate(preds)
-        dates = dates[0].union_many(dates[1:])
-
-        bb_tpd_dict[data_group] = {"trues": trues, "preds": preds, "dates": dates}
+    # Aggregate and cast
+    for data_group in ["train", "val", "test"]:
+        bb_tpd_dict[data_group]["trues"] = np.concatenate(
+            bb_tpd_dict[data_group]["trues"]
+        )
+        bb_tpd_dict[data_group]["preds"] = np.concatenate(
+            bb_tpd_dict[data_group]["preds"]
+        )
+        bb_tpd_dict[data_group]["dates"] = bb_tpd_dict[data_group]["dates"][
+            0
+        ].union_many(bb_tpd_dict[data_group]["dates"][1:])
 
     with open(os.path.join(full_test_dir, "tpd_dict.pickle"), "wb") as handle:
         pickle.dump(bb_tpd_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)

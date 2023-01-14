@@ -316,7 +316,6 @@ class ExpTimeseries(pl.LightningModule):
             scheduler = {
                 "scheduler": scheduler,
                 "interval": "step",  # called after each training step
-                "monitor": "val_loss",
             }
         else:
             return optimizer
