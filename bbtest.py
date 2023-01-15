@@ -89,20 +89,20 @@ def run_bbtest(
             "val": {"trues": [], "preds": [], "dates": []},
             "test": {"trues": [], "preds": [], "dates": []},
         }
+        test_loop_outputs = []
         for log_dir, args, test_loop_output in outputs.get():
             args = dotdict(args)
+            test_loop_outputs.append(test_loop_output)
 
-            test_loop_outputs = []
-    for data_group in ["train", "val", "test"]:
-            tpd_dict = open_results(log_dir, args, df)
+            for data_group in ["train", "val", "test"]:
+                tpd_dict = open_results(log_dir, args, df)
 
-            true = tpd_dict[data_group]["trues"]
-            pred = tpd_dict[data_group]["preds"]
-            date = tpd_dict[data_group]["dates"]
+                true = tpd_dict[data_group]["trues"]
+                pred = tpd_dict[data_group]["preds"]
+                date = tpd_dict[data_group]["dates"]
                 bb_tpd_dict[data_group]["trues"].append(true)
                 bb_tpd_dict[data_group]["preds"].append(pred)
                 bb_tpd_dict[data_group]["dates"].append(date)
-            test_loop_outputs.append(test_loop_output)
 
     # Aggregate and cast
     for data_group in ["train", "val", "test"]:
@@ -127,6 +127,14 @@ def run_bbtest(
     metrics = {0.0: zero_thresh_metrics, best_thresh: best_thresh_metrics}
     with open(os.path.join(full_test_dir, "metrics.json"), "w") as f:
         json.dump(metrics, f, indent=2)
+
+    # Warnings
+    action_diff = np.abs(
+        metrics[0.0]["test"]["pct_excluded_nshort"]
+        - metrics[0.0]["test"]["pct_excluded_oshort"]
+    )
+    if action_diff > 0.6:
+        print("WARNING: significant action preference between buying shorting")
 
     print("bbtest logged in:", full_test_dir)
     return metrics

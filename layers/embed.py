@@ -150,6 +150,7 @@ class DataEmbedding(nn.Module):
 
         self.append_time_emb = embed_type == "time2vec_app"
 
+        # For the temporal embedding
         if embed_type is not None:
             assert embed_type in [
                 "fixed",

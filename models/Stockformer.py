@@ -56,8 +56,6 @@ class Stockformer(nn.Module):
             else None,
             norm_layer=torch.nn.LayerNorm(config.d_model),
         )
-        # self.encoder_layer = nn.TransformerEncoderLayer(d_model=config.d_model, nhead=config.n_heads, dim_feedforward=config.d_ff, dropout=config.dropout, activation=config.activation)
-        # self.encoder = nn.TransformerEncoder(self.encoder_layer, num_layers=config.e_layers)
 
         self.final = nn.Linear(config.d_model * config.seq_len, config.c_out, bias=True)
         # nn.init.xavier_normal_(self.final.weight, gain=nn.init.calculate_gain("tanh"))
@@ -98,6 +96,7 @@ class Stockformer(nn.Module):
 
         out = self.final(enc_out.flatten(start_dim=1))
 
+        # The None below is just adding a dummy dimention
         if self.output_attention:
             return out[:, None, :], attns
         else:

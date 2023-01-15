@@ -147,9 +147,9 @@ class ExpTimeseries(pl.LightningModule):
         batch_x, batch_y, batch_x_mark, batch_y_mark, _ = batch
 
         data_sets = [
-            self.trainer.datamodule.data_test,
             self.trainer.datamodule.data_train,
             self.trainer.datamodule.data_val,
+            self.trainer.datamodule.data_test,
         ]
 
         pred, true, _ = self._process_one_batch(
@@ -168,34 +168,6 @@ class ExpTimeseries(pl.LightningModule):
             loss,
             sync_dist=False,
         )
-        # elif dataloader_idx == 1:
-        #     self.log("test_loss_trn", loss, sync_dist=False)
-        # elif dataloader_idx == 2:
-        #     self.log("test_loss_val", loss, sync_dist=False)
-
-        # self.log(
-        #     "test_loss",
-        #     {f"ds_{0}": loss, f"ds_{1}": loss},
-        #     reduce_fx=self.reduce_fx,
-        #     sync_dist=False,
-        #     add_dataloader_idx=False,
-        # )
-
-        # return {
-        #     "pred": pred,
-        #     "true": true,
-        #     # "batch_idx": batch_idx,
-        #     # "dataloader_idx": dataloader_idx,
-        # }
-
-    # def test_epoch_end(self, outputs):
-    #     return outputs
-
-    # def on_test_epoch_end(self, outputs=None):
-    #     pass
-
-    # def on_test_end(self):
-    #     pass
 
     def predict_step(self, batch, batch_idx, dataloader_idx=0):
         batch_x, batch_y, batch_x_mark, batch_y_mark, _ = batch
@@ -302,7 +274,7 @@ class ExpTimeseries(pl.LightningModule):
             )
             scheduler = {
                 "scheduler": scheduler,
-                "interval": "epoch",  # called after each training step
+                "interval": "epoch",  # called after each training epoch
                 "monitor": "val_loss",
             }
         elif self.config.lradj == "type3":
@@ -321,22 +293,3 @@ class ExpTimeseries(pl.LightningModule):
             return optimizer
 
         return [optimizer], [scheduler]
-
-    # def optimizer_step(
-    #     self,
-    #     epoch,
-    #     batch_idx,
-    #     optimizer,
-    #     optimizer_idx,
-    #     optimizer_closure,
-    #     on_tpu,
-    #     using_native_amp,
-    #     using_lbfgs,
-    # ):
-    #     if self.trainer.global_step < 500:
-    #         lr_scale = min(1.0, float(self.trainer.global_step + 1) / 500.0)
-    #         for pg in optimizer.param_groups:
-    #             pg["lr"] = lr_scale * self.learning_rate
-
-    #     optimizer.step()
-    #     optimizer.zero_grad()
