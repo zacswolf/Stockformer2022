@@ -72,7 +72,7 @@ class FixedEmbedding(nn.Module):
 
 
 class TemporalEmbedding(nn.Module):
-    def __init__(self, d_model, embed_type="fixed", freq="h"):
+    def __init__(self, d_model, t_embed="fixed", freq="h"):
         super(TemporalEmbedding, self).__init__()
 
         minute_size = 4
@@ -81,7 +81,7 @@ class TemporalEmbedding(nn.Module):
         day_size = 32
         month_size = 13
 
-        Embed = FixedEmbedding if embed_type == "fixed" else nn.Embedding
+        Embed = FixedEmbedding if t_embed == "fixed" else nn.Embedding
         if freq == "t":
             self.minute_embed = Embed(minute_size, d_model)
         self.hour_embed = Embed(hour_size, d_model)
@@ -104,7 +104,7 @@ class TemporalEmbedding(nn.Module):
 
 
 class TimeFeatureEmbedding(nn.Module):
-    def __init__(self, d_model, embed_type="timeF", freq="h"):
+    def __init__(self, d_model, t_embed="timeF", freq="h"):
         super(TimeFeatureEmbedding, self).__init__()
 
         freq_map = {"h": 4, "t": 5, "s": 6, "m": 1, "a": 1, "w": 2, "d": 3, "b": 3}
@@ -140,7 +140,7 @@ class DataEmbedding(nn.Module):
         self,
         c_in,
         d_model,
-        embed_type="fixed",
+        t_embed="fixed",
         freq="h",
         dropout_emb=0.01,
         position_embedding=True,
@@ -148,29 +148,29 @@ class DataEmbedding(nn.Module):
     ):
         super(DataEmbedding, self).__init__()
 
-        self.append_time_emb = embed_type == "time2vec_app"
+        self.append_time_emb = t_embed == "time2vec_app"
 
         # For the temporal embedding
-        if embed_type is not None:
-            assert embed_type in [
+        if t_embed is not None:
+            assert t_embed in [
                 "fixed",
                 "learned",
                 "timeF",
                 "time2vec_add",
                 "time2vec_app",
-            ], "Invalid embed_type"
-            if embed_type == "fixed" or embed_type == "learned":
+            ], "Invalid t_embed"
+            if t_embed == "fixed" or t_embed == "learned":
                 self.temporal_embedding = TemporalEmbedding(
-                    d_model=d_model, embed_type=embed_type, freq=freq
+                    d_model=d_model, t_embed=t_embed, freq=freq
                 )
-            elif embed_type == "timeF":
+            elif t_embed == "timeF":
                 self.temporal_embedding = TimeFeatureEmbedding(
-                    d_model=d_model, embed_type=embed_type, freq=freq
+                    d_model=d_model, t_embed=t_embed, freq=freq
                 )
-            elif embed_type == "time2vec_add":
+            elif t_embed == "time2vec_add":
                 # Time2Vec time embedding add elementwise
                 self.temporal_embedding = Time2Vec(time_emb_dim=d_model, freq=freq)
-            elif embed_type == "time2vec_app":
+            elif t_embed == "time2vec_app":
                 # Time2Vec time embedding appended
                 assert (
                     emb_t2v_app_dim is not None

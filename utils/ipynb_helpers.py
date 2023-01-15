@@ -22,7 +22,7 @@ def args_from_setting(setting, args):
     #     args.seq_len, args.label_len, args.pred_len,
     #     args.enc_in, args.dec_in, args.c_out, args.inverse,
     #     args.d_model, args.n_heads, args.e_layers, args.d_layers, args.d_ff, args.attn, args.factor,
-    #     args.embed, args.distil, args.mix, args.des, ii) = map(conv, match.groups())
+    #     args.t_embed, args.distil, args.mix, args.des, ii) = map(conv, match.groups())
     #     print(args)
     # else:
     #     raise Exception("Issue with setting name")
@@ -53,7 +53,7 @@ def setting_from_args(args, ii=0):
         args.d_ff,
         args.attn,
         args.factor,
-        args.embed,
+        args.t_embed,
         args.distil,
         args.mix,
         args.des,
@@ -73,7 +73,7 @@ def bbtest_setting(args):
         args.d_model,
         args.n_heads,
         args.e_layers,
-        args.embed,
+        args.t_embed,
     )
 
     return setting

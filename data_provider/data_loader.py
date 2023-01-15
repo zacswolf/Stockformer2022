@@ -290,7 +290,7 @@ class Dataset_Custom(Dataset):
             "date_end": None,
             "date_test": None,
             "date_val": None,
-            "embed": None,
+            "t_embed": None,
         }
         config = dotdict({**defaults, **config})
 
@@ -345,10 +345,10 @@ class Dataset_Custom(Dataset):
         self.config = config
         self.flag = flag
 
-        # self.timeenc = 0 if config.embed != "timeF" else 1
-        if config.embed == "timeF":
+        # self.timeenc = 0 if config.t_embed != "timeF" else 1
+        if config.t_embed == "timeF":
             self.timeenc = 1
-        elif config.embed == "time2vec_add" or config.embed == "time2vec_app":
+        elif config.t_embed == "time2vec_add" or config.t_embed == "time2vec_app":
             self.timeenc = 2
         else:
             self.timeenc = 0
@@ -509,7 +509,7 @@ class Dataset_Pred(Dataset):
             "cols": None,
             "date_start": None,
             "date_end": None,
-            "embed": None,
+            "t_embed": None,
         }
         config = dotdict({**defaults, **config})
 
@@ -528,10 +528,10 @@ class Dataset_Pred(Dataset):
 
         self.config = config
         self.flag = flag
-        # self.timeenc = 0 if config.embed != "timeF" else 1
-        if config.embed == "timeF":
+        # self.timeenc = 0 if config.t_embed != "timeF" else 1
+        if config.t_embed == "timeF":
             self.timeenc = 1
-        elif config.embed == "time2vec_add" or config.embed == "time2vec_app":
+        elif config.t_embed == "time2vec_add" or config.t_embed == "time2vec_app":
             self.timeenc = 2
         else:
             self.timeenc = 0
@@ -589,9 +589,9 @@ class Dataset_Pred(Dataset):
         )
         self.raw_dates = df_stamp.date.to_numpy(dtype=np.datetime64)
         # TODO: What is the deal with .freq[-1:]
-        self.data_stamp = np.float32(time_features(
-            df_stamp, timeenc=self.timeenc, freq=self.config.freq[-1:]
-        ))
+        self.data_stamp = np.float32(
+            time_features(df_stamp, timeenc=self.timeenc, freq=self.config.freq[-1:])
+        )
 
         self.data_x = data[border1:border2]
         if self.config.inverse:

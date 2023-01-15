@@ -21,7 +21,7 @@ class Stockformer(nn.Module):
         self.enc_embedding = DataEmbedding(
             config.enc_in,
             config.d_model,
-            config.embed,
+            config.t_embed,
             config.freq,
             config.dropout_emb,
             emb_t2v_app_dim=config.emb_t2v_app_dim,
@@ -114,7 +114,11 @@ class StockformerVanilla(nn.Module):
 
         # Embedding
         self.enc_embedding = DataEmbedding(
-            config.enc_in, config.d_model, config.embed, config.freq, config.dropout_emb
+            config.enc_in,
+            config.d_model,
+            config.t_embed,
+            config.freq,
+            config.dropout_emb,
         )
 
         # TODO: Make sure this is correct

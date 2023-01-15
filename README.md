@@ -97,7 +97,7 @@ python -u main_informer.py --model <model> --data <data>
 --enc_in <enc_in> --dec_in <dec_in> --c_out <c_out> --d_model <d_model>
 --n_heads <n_heads> --e_layers <e_layers> --d_layers <d_layers>
 --s_layers <s_layers> --d_ff <d_ff> --factor <factor> --padding <padding>
---distil --dropout <dropout> --attn <attn> --embed <embed> --activation <activation>
+--distil --dropout <dropout> --attn <attn> --t_embed <t_embed> --activation <activation>
 --output_attention --do_predict --mix --cols <cols> --itr <itr>
 --num_workers <num_workers> --max_epochs <max_epochs>
 --batch_size <batch_size> --patience <patience> --des <des>
@@ -134,7 +134,7 @@ The detailed descriptions about the arguments are as following:
 | distil | Whether to use distilling in encoder, using this argument means not using distilling (defaults to `True`) |
 | dropout | The probability of dropout (defaults to 0.05) |
 | attn | Attention used in encoder (defaults to `prob`). This can be set to `prob` (informer), `full` (transformer) |
-| embed | Time features encoding (defaults to `timeF`). This can be set to `timeF`, `fixed`, `learned` |
+| t_embed | Time features encoding (defaults to `timeF`). This can be set to `timeF`, `fixed`, `learned` |
 | activation | Activation function (defaults to `gelu`) |
 | output_attention | Whether to output attention in encoder, using this argument means outputing attention (defaults to `False`) |
 | do_predict | Whether to predict unseen future data, using this argument means making predictions (defaults to `False`) |

@@ -25,7 +25,7 @@ dropout: 0.5
 dropout_emb: 0.0
 e_layers: 12
 emb_t2v_app_dim: 16
-embed: time2vec_app
+t_embed: time2vec_app
 enc_in: 9
 factor: 5
 features: MS
