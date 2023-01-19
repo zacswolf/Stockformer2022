@@ -29,6 +29,7 @@ t_embed: null #time2vec_add
 enc_in: 9
 factor: 5
 features: MS
+final_mode: mode3
 freq: h
 inverse_output: false
 inverse_pred: true

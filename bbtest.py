@@ -9,7 +9,7 @@ from multiprocessing import current_process
 import numpy as np
 from pytorch_lightning.loggers import TensorBoardLogger
 
-from pt_light import pt_light_expiriment
+from pt_light import pt_light_experiment
 from utils.ipynb_helpers import read_data, bbtest_setting
 from utils.results_analysis import get_tuned_metrics, open_results
 from utils.tools import dotdict
@@ -22,7 +22,7 @@ LOG_BASE_DIR = "bbtest_logs"
 GPU_LIST = list(map(lambda x: [x], range(8)))
 
 
-def call_expiriment(enumerated_args: list[tuple[int, dict, str]]):
+def call_experiment(enumerated_args: list[tuple[int, dict, str]]):
     """Function to figure out what device to use and train a model based on that"""
     run_idx, args, setting = enumerated_args
     args = dotdict(args)
@@ -32,7 +32,7 @@ def call_expiriment(enumerated_args: list[tuple[int, dict, str]]):
     logger = TensorBoardLogger(
         LOG_BASE_DIR, name=setting, flush_secs=15, version=run_idx
     )
-    log_dir, test_loop_output = pt_light_expiriment(
+    log_dir, test_loop_output = pt_light_experiment(
         args, devices=GPU_LIST[gpu_list_idx], logger=logger
     )
     assert logger.log_dir == log_dir
@@ -81,7 +81,7 @@ def run_bbtest(
     df = read_data(os.path.join(args.root_path, args.data_path))
 
     with NoDaemonProcessPool(processes=len(GPU_LIST)) as pool:
-        outputs = pool.map_async(call_expiriment, inputs)
+        outputs = pool.map_async(call_experiment, inputs)
 
         # Open, Process, and Aggregate Test Data
         bb_tpd_dict = {

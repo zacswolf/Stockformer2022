@@ -15,6 +15,17 @@ class TriangularCausalMask:
     def mask(self):
         return self._mask
 
+class QuestionMask:
+    def __init__(self, B, L, device="cpu"):
+        mask_shape = [B, 1, L, L]
+        with torch.no_grad():
+            self._mask = torch.zeros(mask_shape, dtype=torch.bool).to(device)
+            self._mask[:,:,:-1,-1] = True
+
+    @property
+    def mask(self):
+        return self._mask
+
 
 class ProbMask:
     def __init__(self, B, H, L, index, scores, device="cpu"):

@@ -5,6 +5,7 @@ import torch.nn as nn
 from layers.encoder import Encoder, EncoderLayer, ConvLayer
 from layers.attn import FullAttention, AttentionLayer, ProbAttention
 from layers.embed import DataEmbedding
+from utils.masking import QuestionMask
 
 
 class Stockformer(nn.Module):
@@ -16,6 +17,8 @@ class Stockformer(nn.Module):
         self.output_attention = config.output_attention
 
         self.seq_len = config.seq_len
+
+        self.final_mode = config.final_mode
 
         # Embedding
         self.enc_embedding = DataEmbedding(
@@ -34,7 +37,7 @@ class Stockformer(nn.Module):
                 EncoderLayer(
                     AttentionLayer(
                         Attn(
-                            False,
+                            True if config.final_mode == "mode3" else False,
                             config.factor,
                             attention_dropout=config.dropout,
                             output_attention=config.output_attention,
@@ -57,7 +60,14 @@ class Stockformer(nn.Module):
             norm_layer=torch.nn.LayerNorm(config.d_model),
         )
 
-        self.final = nn.Linear(config.d_model * config.seq_len, config.c_out, bias=True)
+        if config.final_mode == "mode1":
+            self.final = nn.Linear(
+                config.d_model * config.seq_len, config.c_out, bias=True
+            )
+        elif config.final_mode == "mode2" or config.final_mode == "mode3":
+            self.final = nn.Linear(config.d_model, config.c_out, bias=True)
+        else:
+            raise Exception(f"Invalid final_mode: {config.final_mode}")
         # nn.init.xavier_normal_(self.final.weight, gain=nn.init.calculate_gain("tanh"))
 
         # self.final = nn.Sequential(*[
@@ -88,82 +98,31 @@ class Stockformer(nn.Module):
         assert len(x_enc.shape) == 3
         assert x_enc.shape[1] == self.seq_len
 
+        if self.final_mode == "mode3":
+            # This gives the encoder a question input as the last token
+            # TODO: Maybe this should be initialized differently, like to the mean of x_enc, random, mean of dataset?
+            zeros = torch.zeros([x_enc.shape[0], 1, x_enc.shape[2]]).to(x_enc)
+            x_enc = torch.cat([x_enc, zeros], 1)
+            x_mark_enc = torch.cat([x_mark_enc, x_mark_dec], 1)
+            assert enc_self_mask is None
+            enc_self_mask = QuestionMask(
+                x_enc.shape[0], x_enc.shape[1], device=x_enc.device
+            )
+
         # emb_out is (batch_size / num gpus, seq_len, d_model)
         emb_out = self.enc_embedding(x_enc, x_mark_enc)
 
         # enc_out is (batch_size / num gpus, seq_len, d_model) but seq_len will change if distil
         enc_out, attns = self.encoder(emb_out, attn_mask=enc_self_mask)
 
-        out = self.final(enc_out.flatten(start_dim=1))
-
-        # The None below is just adding a dummy dimention
-        if self.output_attention:
-            return out[:, None, :], attns
+        if self.final_mode == "mode1":
+            out = self.final(enc_out.flatten(start_dim=1))
+        elif self.final_mode == "mode2" or self.final_mode == "mode3":
+            out = self.final(enc_out[:, -1, :])
         else:
-            return out[:, None, :]  # (batch_size, 1, c_out)
+            assert False, f"Forward missing valid final mode {self.final_mode}"
 
-
-class StockformerVanilla(nn.Module):
-    def __init__(self, config):
-        super(Stockformer, self).__init__()
-        self.pred_len = config.pred_len
-        assert self.pred_len == 1, "Stockformer needs pred_len to be 1"
-        self.output_attention = config.output_attention
-
-        self.seq_len = config.seq_len
-
-        # Embedding
-        self.enc_embedding = DataEmbedding(
-            config.enc_in,
-            config.d_model,
-            config.t_embed,
-            config.freq,
-            config.dropout_emb,
-        )
-
-        # TODO: Make sure this is correct
-        self.encoder_layer = nn.TransformerEncoderLayer(
-            d_model=config.d_model,
-            nhead=config.n_heads,
-            dim_feedforward=config.d_ff,
-            dropout=config.dropout,
-            activation=config.activation,
-            batch_first=True,
-            norm_first=True,
-        )
-        self.encoder = nn.TransformerEncoder(
-            self.encoder_layer, num_layers=config.e_layers
-        )
-
-        self.final = nn.Linear(config.d_model * config.seq_len, config.c_out, bias=True)
-        # self.final = nn.Sequential(*[
-        #     nn.Linear(config.d_model * config.seq_len, config.d_model * 4, bias=True),
-        #     nn.GELU(),
-        #     nn.Linear(config.d_model * 4, config.c_out, bias=True)
-        # ])
-
-    def forward(
-        self,
-        x_enc,
-        x_mark_enc,
-        x_dec,
-        x_mark_dec,
-        enc_self_mask=None,
-        dec_self_mask=None,
-        dec_enc_mask=None,
-    ):
-        # x_enc is (batch_size / num gpus, seq_len, enc_in)
-        # x_mark_enc is (batch_size / num gpus, seq_len, date-representation (7forhours))
-        assert x_enc.shape[1] == self.seq_len
-
-        # emb_out is (batch_size / num gpus, seq_len, d_model)
-        emb_out = self.enc_embedding(x_enc, x_mark_enc)
-
-        # enc_out is (batch_size / num gpus, seq_len, d_model) but seq_len will change if distil
-        enc_out, attns = self.encoder(emb_out, attn_mask=enc_self_mask)
-
-        out = self.final(enc_out.flatten(start_dim=1))
-
+        # The None below is just adding a dummy dimension
         if self.output_attention:
             return out[:, None, :], attns
         else:
