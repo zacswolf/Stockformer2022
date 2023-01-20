@@ -1,3 +1,11 @@
+"""
+Bbtest stands for back-back test
+This simulates training a model and testing it on some time frame and then training a new model on the timeframe after the previous, etc
+Essentially its back testing not just our model, but our learning process several times along with the model each process produces
+Example:
+* Train k models, start with n months of data
+* Model i in [1,k] gets trained on months [0:n+i-1], its validation data is month n+i, its test data is month n+i+1
+"""
 import json
 import yaml
 import pickle

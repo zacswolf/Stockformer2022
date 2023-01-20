@@ -1,3 +1,6 @@
+"""
+This will train one model given a config
+"""
 import json
 import os
 from pprint import pprint
