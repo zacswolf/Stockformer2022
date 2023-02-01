@@ -51,7 +51,7 @@ class CustomDataModule(pl.LightningDataModule):
         return DataLoader(
             self.data_train,
             batch_size=self.batch_size,
-            shuffle=False,
+            shuffle=not self.config.dont_shuffle_train,
             num_workers=self.num_workers,
             drop_last=True,
         )
@@ -107,7 +107,7 @@ class CustomDataModule(pl.LightningDataModule):
             DataLoader(
                 self.data_train,
                 batch_size=self.config.batch_size,
-                shuffle=not self.config.dont_shuffle_train,
+                shuffle=False,
                 drop_last=False,
                 num_workers=self.num_workers,
             ),

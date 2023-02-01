@@ -1,7 +1,7 @@
 import datetime
 import json
 import os
-import re
+from pathlib import Path
 
 import torch
 from utils.tools import dotdict
@@ -97,20 +97,35 @@ def write_df(data, out_file, append=""):
             os.makedirs(data_old)
         new_file_name = f"{out_file[:out_file.rfind('.')].replace('./','').replace('/','_')}_{datetime.datetime.now().strftime('%d_%m_%Y_%H_%M_%S')}{out_file[out_file.rfind('.'):]}"
         os.rename(out_file, os.path.join(data_old, new_file_name))
-
+    else:
+        # Just attempt to make directories just incase
+        os.makedirs(Path(out_file).parent, exist_ok=True)
     data.to_csv(out_file)
     data.columns = og_cols
     return out_file
 
 
 # write_df(df, "test.csv")
-def read_data(out_file="realdata.csv"):
+def read_data(out_file="realdata.csv", stock=True):
     data = pd.read_csv(out_file, index_col=0)
+
+    if not stock:
+        # Convert value timeseries into open close
+        converter = lambda col: f"{col}_open"
+        data.columns = data.columns.map(converter)
+        for column in data.columns:
+            data[f"{column.split('_')[0]}_close"] = data[column].shift(-1)
+        data = data.reindex(sorted(data.columns), axis=1)
 
     converter = lambda col: tuple(col.split("_"))
     # ast.literal_eval
     data.columns = data.columns.map(converter)
+
     data.index = pd.to_datetime(data.index)
+    if data.index.tz is None:
+        print("Warning: data did not have timestamp, adding utc")
+        data.index = pd.to_datetime(data.index, utc=True)
+
     return data
 
 

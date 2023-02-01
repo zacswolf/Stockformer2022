@@ -365,6 +365,11 @@ class Dataset_Custom(Dataset):
             {c: np.float32 for c in df_raw.select_dtypes(include="float64").columns}
         )
         df_raw["date"] = pd.to_datetime(df_raw["date"])
+
+        if np.isinf(df_raw[df_raw.columns[1:]].to_numpy()).any():
+            raise Exception("There are inf's in the dataset")
+        if np.isnan(df_raw[df_raw.columns[1:]].to_numpy()).any():
+            raise Exception("There are nan's in the dataset")
         """
         df_raw.columns: ['date', ...(other features), target feature]
         """
@@ -408,6 +413,13 @@ class Dataset_Custom(Dataset):
             num_train = int(len(df_raw) * 0.7)
             num_test = int(len(df_raw) * 0.2)
             num_vali = len(df_raw) - num_train - num_test
+
+        if num_test == 0:
+            raise Exception("Dataset loading issue: num_test==0, check date settings")
+        elif num_vali == 0:
+            raise Exception("Dataset loading issue: num_vali==0, check date settings")
+        elif num_train == 0:
+            raise Exception("Dataset loading issue: num_train==0, check date settings")
 
         border1s = [
             0,

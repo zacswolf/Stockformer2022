@@ -125,6 +125,7 @@ class Time2Vec(nn.Module):
 
         self.out_features = time_emb_dim
 
+        # TODO: Initialize uniform
         self.linear_periodic = nn.Linear(time_feat_dim, time_emb_dim - 1)
         self.linear_non_periodic = nn.Linear(time_feat_dim, 1)
 

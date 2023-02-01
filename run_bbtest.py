@@ -144,6 +144,12 @@ def run_bbtest(
     if action_diff > 0.6:
         print("WARNING: significant action preference between buying shorting")
 
+    train_pct_dir_correct = metrics[0.0]["train"]["pct_dir_correct"]
+    if train_pct_dir_correct < 0.55:
+        print(
+            f"WARNING: train isn't properly learning direction. pct_dir_correct: {train_pct_dir_correct}"
+        )
+
     print("bbtest logged in:", full_test_dir)
     return metrics
 

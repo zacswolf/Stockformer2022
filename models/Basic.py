@@ -28,6 +28,7 @@ class MLP(nn.Module):
         else:
             layers = [nn.Linear(flattened_enc_in, self.d_model), nn.GELU()]
             for _ in range(config.e_layers - 2):
+                layers.append(nn.Dropout(config.dropout))
                 layers.append(nn.Linear(self.d_model, self.d_model))
                 layers.append(nn.GELU())
 

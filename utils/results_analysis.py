@@ -61,7 +61,10 @@ def open_results(
                 )
 
                 # Override trues with df target data to get original numerical precision
-                if not ("mse" in args.loss and not args.inverse_output):
+                if (
+                    not ("mse" in args.loss and not args.inverse_output)
+                    and df is not None
+                ):
                     print("OVERRIDING trues with df target")
                     df_data_group = df.loc[tpd_dict_tuple[data_group][2]]
                     t = args.target.split("_")
@@ -85,7 +88,7 @@ def open_results(
 
 
 def get_metrics(
-    args: dotdict, pred: np.ndarray, true: np.ndarray, thresh: float = 0.0
+    args: dotdict | None, pred: np.ndarray, true: np.ndarray, thresh: float = 0.0
 ) -> dict:
     """Function to return metrics based on outputs and labels"""
     # Filter by a threshold
@@ -124,6 +127,16 @@ def get_metrics(
     # Optimal percent profit
     pct_profit_dir_opt = LogPctProfitDirection.metric(true_f, true_f)
 
+    # Always 1 direction
+    avg_pct_profit_always_short = np.power(
+        LogPctProfitDirection.metric(-np.ones(pred_f.shape), true_f, short_filter=None),
+        (1 / len(pred_f)),
+    )
+    avg_pct_profit_always_buy = np.power(
+        LogPctProfitDirection.metric(np.ones(pred_f.shape), true_f, short_filter=None),
+        (1 / len(pred_f)),
+    )
+
     # Return metrics
     metrics = {
         "avg_pct_profit_tanhv1": np.power(pct_profit_tanhv1, (1 / len(pred_f))),
@@ -141,6 +154,8 @@ def get_metrics(
         "pct_excluded_oshort": (len(pred) - len(pred_f[pred_f < 0])) / len(pred),
         "pct_dir_correct": pct_dir_correct,
         "pct_profit_dir_opt": pct_profit_dir_opt,
+        "avg_pct_profit_always_short": avg_pct_profit_always_short,
+        "avg_pct_profit_always_buy": avg_pct_profit_always_buy,
     }
     return metrics
 
@@ -167,6 +182,8 @@ def get_tuned_metrics(args: dotdict, tpd_dict: dict):
         tune_metric = "pct_profit_tanhv1"
     elif args.loss == "stock_tanhv2":
         tune_metric = "pct_profit_tanhv2"
+    elif args.loss == "stock_tanhv4":
+        tune_metric = "pct_profit_tanhv1"  # this is on purpose
     elif args.loss == "stock_tanh":
         tune_metric = "pct_profit_tanh"
     else:

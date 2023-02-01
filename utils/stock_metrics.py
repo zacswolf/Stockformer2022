@@ -35,6 +35,8 @@ def get_stock_algo(target_type, stock_loss_mode) -> StockAlgo:
             return LogPctProfitTanhV2
         elif stock_algo == "tanhv3":
             return LogPctProfitTanhV3
+        elif stock_algo == "tanhv4":
+            return LogPctProfitTanhV4
 
         raise Exception("Invalid tanh loss")
     elif "dir" == stock_algo:
@@ -74,6 +76,10 @@ def apply_threshold_metric(output, other, threshold=0.0002):
 
 def pct_direction(output, pct_change):
     return np.sum(np.sign(output) == np.sign(pct_change)) / len(pct_change)
+
+
+def pct_direction_torch(output, pct_change):
+    return torch.sum(torch.sign(output) == torch.sign(pct_change)) / len(pct_change)
 
 
 class PctProfitDirection(StockAlgo):
@@ -149,6 +155,7 @@ class LogPctProfitTanhV1(StockAlgo):
 
     @staticmethod
     def loss(output, log_pct_change, short_filter: None | str = None):
+        assert not torch.isnan(output).any(), "output is nan"
         tanh = torch.tanh(output)
         raw = log_pct_change * tanh
         return apply_short_filter(output, raw, short_filter)
@@ -272,3 +279,42 @@ class LogPctProfitTanhV3(StockAlgo):
         raw = log_pct_change * ((1 - mult_min) * at_sigmoid_bounds + mult_min)
 
         return np.exp(np.cumsum(apply_short_filter(output, raw, short_filter)))
+
+
+class LogPctProfitTanhV4(StockAlgo):
+    """
+    Percent profit with investing tanh partial purchase and 2x multiplier on losses
+
+    V4: just uses a tanh based multiplier. This is inaccurate as a metric but fine as a loss.
+    """
+
+    @staticmethod
+    def loss(output, log_pct_change, short_filter: None | str = None):
+        assert not torch.isnan(output).any(), "output is nan"
+        tanh = torch.tanh(output)
+        raw = log_pct_change * tanh
+
+        # The 1e-8 is because torch.sqrt(0) doesn't have a gradient
+        raw_sqrt = 2 * raw  # torch.sqrt(torch.abs(raw) + 1e-8)
+        is_loss = raw < 0
+        is_gain = raw >= 0
+
+        raw_w_direction_punishment = raw * is_gain + raw_sqrt * is_loss
+
+        return apply_short_filter(output, raw_w_direction_punishment, short_filter)
+
+    @staticmethod
+    def metric(output, log_pct_change, short_filter: None | str = None):
+        raise Exception("LogPctProfitTanhV4 is not a valid metric")
+        # # TODO: Potentially clip the negative tanh outputs: max(tanh, log(1-pctchange)/log(1+pctchange))
+        # tanh = np.tanh(output)
+        # raw = log_pct_change * tanh
+        # return np.exp(apply_short_filter(output, raw, short_filter).sum())
+
+    @staticmethod
+    def accumulate(output, log_pct_change, short_filter: None | str = None):
+        raise Exception("LogPctProfitTanhV4 is not a valid metric")
+        # # TODO: Potentially clip the negative tanh outputs: max(tanh, log(1-pctchange)/log(1+pctchange))
+        # tanh = np.tanh(output)
+        # raw = log_pct_change * tanh
+        # return np.exp(np.cumsum(apply_short_filter(output, raw, short_filter)))

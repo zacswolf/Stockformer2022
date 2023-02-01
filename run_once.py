@@ -242,7 +242,7 @@ if __name__ == "__main__":
     # with open("configs/stockformer/example.yaml", "w") as file:
     #     yaml.dump(dict(args), file)
 
-    config_file = "configs/stockformer/general.yaml"
+    config_file = "configs/stockformer/basic.yaml"
     devices = [4]
 
     with open(config_file, "r") as file:
