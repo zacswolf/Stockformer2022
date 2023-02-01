@@ -1,31 +1,21 @@
 activation: gelu
 attn: full
-batch_size: 128
+batch_size: 256
 c_out: 1
-cols:
-- XOM_logpctchange
-- CVX_logpctchange
-- COP_logpctchange
-- BP_logpctchange
-- PBR_logpctchange
-- WTI_logpctchange
-- EOG_logpctchange
-- ENB_logpctchange
-- SLB_logpctchange
+cols: null
 d_ff: 4096 #2048
 d_model: 512
-data_path: full_1h.csv
-date_end: '2020-01-01'
-date_start: '2012-01-01'
-date_test: '2019-06-01'
+data_path: material_1h.csv
+# date_end: '2020-01-01'
+# date_start: '2012-01-01'
+# date_test: '2019-06-01'
 des: full_1h
 distil: false
-dont_shuffle_train: true
+dont_shuffle_train: false
 dropout: 0.5
 dropout_emb: 0.0
-e_layers: 12
+e_layers: 4
 emb_t2v_app_dim: 16
-t_embed: time2vec_app
 enc_in: 9
 factor: 5
 features: MS
@@ -38,18 +28,21 @@ learning_rate: 1.0e-05
 ln_mode: post
 loss: stock_tanhv1
 lradj: null
+max_epochs: 50
 mix: false
 model: stockformer
-n_heads: 512
+n_heads: 16
 no_early_stop: false
 no_scale_mean: true
 optim: Adam #Ranger
 output_attention: false
-patience: 100
+patience: 1000
 pred_len: 1
+pre_loss: stock_tanhv4
+pre_epochs: 30
 root_path: ./data/stock/
 scale: true
-seed: 4
-seq_len: 16
-target: WTI_logpctchange
-max_epochs: 20
+seed: 1
+seq_len: 32
+t_embed: time2vec_add
+target: FCX_logpctchange

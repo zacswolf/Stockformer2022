@@ -1,0 +1,60 @@
+activation: gelu
+attn: full
+batch_size: 256
+c_out: 1
+cols:
+- Visibility_logpctchange
+- DryBulbFarenheit_logpctchange
+- DryBulbCelsius_logpctchange
+- WetBulbFarenheit_logpctchange
+- DewPointFarenheit_logpctchange
+- DewPointCelsius_logpctchange
+- RelativeHumidity_logpctchange
+- WindSpeed_logpctchange
+- WindDirection_logpctchange
+- StationPressure_logpctchange
+- Altimeter_logpctchange
+- WetBulbCelsius_logpctchange
+d_ff: 4096 #2048
+d_model: 512
+data_path: WTH.csv
+# date_end: '2020-01-01'
+# date_start: '2012-01-01'
+# date_test: '2019-06-01'
+des: full_1h
+distil: false
+dont_shuffle_train: false
+dropout: 0.5
+dropout_emb: 0.0
+e_layers: 4
+emb_t2v_app_dim: 16
+enc_in: 12
+factor: 5
+features: MS
+final_mode: mode3
+freq: h
+inverse_output: false
+inverse_pred: true
+label_len: 0
+learning_rate: 1.0e-05
+ln_mode: post
+loss: stock_tanhv1
+lradj: null
+max_epochs: 30
+mix: false
+model: stockformer
+n_heads: 32
+no_early_stop: false
+no_scale_mean: true
+optim: Adam #Ranger
+output_attention: false
+patience: 1000
+pred_len: 1
+pre_loss: stock_tanhv4
+pre_epochs: 15
+root_path: ./data/other/
+scale: true
+seed: 5
+seq_len: 16
+t_embed: null
+target: WetBulbFarenheit_logpctchange
