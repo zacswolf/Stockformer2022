@@ -5,7 +5,7 @@ from models.Basic import MLP
 from models.Lstm import LSTM
 from models.Informer import Informer, InformerStack
 from models.Stockformer import Stockformer
-from utils.stock_metrics import get_stock_algo
+from utils.stock_metrics import get_stock_algo, pct_direction_torch
 from torchmetrics import MeanSquaredError, MeanAbsoluteError
 from pytorch_forecasting.optim import Ranger
 
@@ -19,8 +19,14 @@ class ExpTimeseries(pl.LightningModule):
         self.learning_rate = config.learning_rate
 
         # Torch metrics has a state that resets but val and train can be called in unison so we split
-        self.train_criterion = self._select_criterion()
-        self.other_criterion = self._select_criterion()
+        # If pre_loss isn't supplied (ie: pre_loss is None) it will default to config.loss
+        self.train_criterion = self._select_criterion(
+            loss_override=self.config.pre_loss
+        )
+        self.other_criterion = self._select_criterion(
+            loss_override=self.config.pre_loss
+        )
+        self.loss_switched = False
 
         self._build_model()
         # self.save_hyperparameters()
@@ -42,10 +48,13 @@ class ExpTimeseries(pl.LightningModule):
         if self.config.load_model_path is not None:
             self.load_from_checkpoint(self.config.load_model_path)
 
-    def _select_criterion(self):
-        if "stock" in self.config.loss:
+    def _select_criterion(self, loss_override=None):
+        loss = self.config.loss
+        if loss_override is not None:
+            loss = loss_override
+        if "stock" in loss:
             # Using Stock Loss
-            _, stock_loss_mode = self.config.loss.split("_")
+            _, stock_loss_mode = loss.split("_")
             target_type = self.config.target.split("_")[1]
             assert (
                 target_type == "pctchange" or target_type == "logpctchange"
@@ -61,21 +70,21 @@ class ExpTimeseries(pl.LightningModule):
             return lambda x, y: -criterion.loss(x, y).mean()
             # return lambda x, y: -LogPctProfitTanhV1.loss(x, y).mean()
             # return get_stock_loss(target_type, stock_loss_mode, threshold=0.0)
-        elif self.config.loss == "mae":
+        elif loss == "mae":
             assert (
                 self.config.scale
                 and self.config.inverse_pred
                 and self.config.inverse_output
             ), "Can't use mae loss without scale, inverse pred, and inverse output"
             return MeanAbsoluteError()
-        elif self.config.loss == "mse":
+        elif loss == "mse":
             assert (
                 self.config.scale
                 and self.config.inverse_pred
                 and self.config.inverse_output
             ), "Can't use mse loss without scale, inverse pred, and inverse output"
             return MeanSquaredError()
-        raise Exception(f"Invalid loss: {self.config.loss}")
+        raise Exception(f"Invalid loss: {loss}")
 
     def forward(self, x):
         # in lightning, forward defines the prediction/inference actions
@@ -96,6 +105,36 @@ class ExpTimeseries(pl.LightningModule):
         loss = self.train_criterion(pred, true)
 
         self.log("train_loss", loss, prog_bar=True, on_step=True, on_epoch=True)
+
+        self.log(
+            "train_pct_dir",
+            pct_direction_torch(pred, true),
+            prog_bar=True,
+            on_step=False,
+            on_epoch=True,
+        )
+        self.log(
+            "train_mag",
+            torch.linalg.norm(pred),  # torch.mean(torch.abs(pred))
+            prog_bar=False,
+            on_step=False,
+            on_epoch=True,
+        )
+
+        if (
+            self.config.pre_epochs is not None
+            and self.config.pre_loss is not None
+            and self.current_epoch == self.config.pre_epochs
+            and not self.loss_switched
+        ):
+            # Revert to default loss
+            self.train_criterion = self._select_criterion(
+                loss_override=self.config.loss
+            )
+            self.other_criterion = self._select_criterion(
+                loss_override=self.config.loss
+            )
+            self.loss_switched = True
 
         return loss
 
@@ -125,6 +164,15 @@ class ExpTimeseries(pl.LightningModule):
                 sync_dist=False,
                 add_dataloader_idx=False,
             )
+
+            self.log(
+                "val_pct_dir",
+                pct_direction_torch(pred, true),
+                prog_bar=False,
+                on_step=False,
+                on_epoch=True,
+                add_dataloader_idx=False,
+            )
             return loss
         elif dataloader_idx == 1:
             # TODO: If we are using torch metrics we should create an additional loss function
@@ -138,6 +186,14 @@ class ExpTimeseries(pl.LightningModule):
                 on_step=False,
                 on_epoch=True,
                 sync_dist=False,
+                add_dataloader_idx=False,
+            )
+            self.log(
+                "test_pct_dir",
+                pct_direction_torch(pred, true),
+                prog_bar=False,
+                on_step=False,
+                on_epoch=True,
                 add_dataloader_idx=False,
             )
             return loss
@@ -266,7 +322,7 @@ class ExpTimeseries(pl.LightningModule):
             scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
                 optimizer,
                 factor=0.5,
-                patience=2,
+                patience=10,
                 threshold=0,
                 cooldown=0,
                 verbose=True,

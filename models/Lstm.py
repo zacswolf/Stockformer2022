@@ -16,11 +16,18 @@ class LSTM(nn.Module):
         # batch_first=True causes input/output tensors to be of shape
         # (batch_dim, seq_dim, feature_dim)
         self.lstm = nn.LSTM(
-            config.enc_in, config.d_model, config.e_layers, batch_first=True
+            input_size=config.enc_in,
+            hidden_size=config.d_model,
+            num_layers=config.e_layers,
+            batch_first=True,
+            dropout=config.dropout,
+            bidirectional=False,
         )
 
+        self.fc_1 = nn.Linear(config.d_model, config.d_ff)
+        self.relu = nn.ReLU()
         # Readout layer
-        self.fc = nn.Linear(config.d_model, config.c_out)
+        self.fc = nn.Linear(config.d_ff, config.c_out)
 
     def forward(self, x, *args, **kwargs):
         # Initialize hidden state with zeros
@@ -31,11 +38,15 @@ class LSTM(nn.Module):
 
         # We need to detach as we are doing truncated backpropagation through time (BPTT)
         # If we don't, we'll backprop all the way to the start even after going through another batch
-        out, (hn, cn) = self.lstm(x, (h0.detach(), c0.detach()))
+        out, (hn, cn) = self.lstm(x, (h0, c0))
 
         # Index hidden state of last time step
         # out.size() --> 100, 32, 100
         # out[:, -1, :] --> 100, 100 --> just want last time step hidden states!
-        out = self.fc(out[:, -1, :])
+
+        # out = self.relu(self.fc_1(out[:, -1, :]))
+        out = self.relu(self.fc_1(self.relu(hn[-1])))
+
+        out = self.fc(out)
         # out.size() --> 100, 10
         return out[:, None]

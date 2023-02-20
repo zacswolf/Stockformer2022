@@ -17,7 +17,7 @@ from multiprocessing import current_process
 import numpy as np
 from pytorch_lightning.loggers import TensorBoardLogger
 
-from pt_light import pt_light_experiment
+from run_once import pt_light_experiment
 from utils.ipynb_helpers import read_data, bbtest_setting
 from utils.results_analysis import get_tuned_metrics, open_results
 from utils.tools import dotdict
@@ -84,7 +84,7 @@ def run_bbtest(
 
     # NOTE: the [-8:] should technically not be used here for a true bbtest
     # However, just having 1 batch of runs is way faster
-    inputs = [(idx, args, setting) for idx, args in enumerate(inputs)][-8:]
+    inputs = [(idx, args, setting) for idx, args in enumerate(inputs)][-len(GPU_LIST) :]
 
     df = read_data(os.path.join(args.root_path, args.data_path))
 
@@ -155,20 +155,43 @@ def run_bbtest(
 
 
 if __name__ == "__main__":
-    config_file = "configs/stockformer/general.yaml"
+    config_file = "configs/lstm/basic_PEMSBAY.yaml"
 
     # The duration of the test set, also the duration we slide with
     test_duration = relativedelta(months=1)
 
     # The duration of the val set
+    # val_duration = relativedelta(weeks=6)  # months=6)
     val_duration = relativedelta(months=6)
 
-    # Full dataset bounds
-    data_start_date = datetime.strptime("2012-01-01", "%Y-%m-%d")
-    data_end_date = datetime.strptime("2020-01-01", "%Y-%m-%d")
+    # OG NO COVID, oil
+    # # Dataset bounds
+    # data_start_date = datetime.strptime("2012-01-01", "%Y-%m-%d")
+    # data_end_date = datetime.strptime("2020-01-01", "%Y-%m-%d")
 
-    # The date we should start the first testing window on
-    test_window_start_date = datetime.strptime("2016-01-01", "%Y-%m-%d")
+    # # The date we should start the first testing window on
+    # test_window_start_date = datetime.strptime("2016-01-01", "%Y-%m-%d")
+
+    # Messing around, oil
+    # test_duration = relativedelta(months=2)
+    # val_duration = relativedelta(months=1)
+    # data_start_date = datetime.strptime("2012-01-01", "%Y-%m-%d")
+    # data_end_date = datetime.strptime("2022-11-10", "%Y-%m-%d")
+    # test_window_start_date = datetime.strptime("2021-01-01", "%Y-%m-%d")
+
+    # WTH
+    # test_duration = relativedelta(months=1)
+    # val_duration = relativedelta(months=6)
+    # data_start_date = datetime.strptime("2010-01-01", "%Y-%m-%d")
+    # data_end_date = datetime.strptime("2013-12-01", "%Y-%m-%d")
+    # test_window_start_date = datetime.strptime("2013-05-01", "%Y-%m-%d")
+
+    # PEMSBAY
+    test_duration = relativedelta(weeks=1)
+    val_duration = relativedelta(weeks=6)
+    data_start_date = datetime.strptime("2017-01-01", "%Y-%m-%d")
+    data_end_date = datetime.strptime("2017-06-29", "%Y-%m-%d")
+    test_window_start_date = datetime.strptime("2017-04-14", "%Y-%m-%d")
 
     run_bbtest(
         config_file,

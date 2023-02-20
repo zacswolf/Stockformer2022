@@ -18,10 +18,15 @@ data_path: full_1h.csv
 # date_end: '2020-01-01'
 # date_start: '2012-01-01'
 # date_test: '2019-06-01'
+# date_test: '2020-11-01'
+# date_val: '2019-11-01'
+date_end: '2022-11-01'
+date_test: '2022-09-01'
+date_val: '2022-08-01'
 des: full_1h
 distil: false
 dont_shuffle_train: false
-dropout: 0.5
+dropout: 0.2
 dropout_emb: 0.0
 e_layers: 4
 emb_t2v_app_dim: 16
@@ -37,10 +42,10 @@ learning_rate: 1.0e-05
 ln_mode: post
 loss: stock_tanhv1
 lradj: null
-max_epochs: 50
+max_epochs: 100
 mix: false
 model: stockformer
-n_heads: 16
+n_heads: 8
 no_early_stop: false
 no_scale_mean: true
 optim: Adam #Ranger
@@ -48,10 +53,10 @@ output_attention: false
 patience: 1000
 pred_len: 1
 pre_loss: stock_tanhv4
-pre_epochs: 30
+pre_epochs: 60
 root_path: ./data/stock/
 scale: true
 seed: 1
-seq_len: 16
-t_embed: time2vec_add
+seq_len: 32
+t_embed: time2vec_app
 target: WTI_logpctchange

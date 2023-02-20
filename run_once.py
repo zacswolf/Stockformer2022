@@ -242,8 +242,8 @@ if __name__ == "__main__":
     # with open("configs/stockformer/example.yaml", "w") as file:
     #     yaml.dump(dict(args), file)
 
-    config_file = "configs/stockformer/basic.yaml"
-    devices = [4]
+    config_file = "configs/lstm/basic_PEMSBAY.yaml"
+    devices = [6]
 
     with open(config_file, "r") as file:
         args = dotdict(yaml.full_load(file))
