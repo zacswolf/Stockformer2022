@@ -1,6 +1,8 @@
 import torch
 from torch import nn
 
+from layers.embed import Time2Vec
+
 
 class LSTM(nn.Module):
     def __init__(self, config):
@@ -13,10 +15,32 @@ class LSTM(nn.Module):
         # Number of hidden layers
         self.e_layers = config.e_layers
 
+        self.enc_in = config.enc_in
+
+        # Time Embedding
+
+        self.t_embed = config.t_embed
+        if self.t_embed is not None:
+            if config.t_embed == "time2vec_app":
+                if not (config.emb_t2v_app_dim > 0):
+                    raise Exception("Need to specify a valid emb_t2v_app_dim")
+                self.enc_in += config.emb_t2v_app_dim
+                self.temporal_embedding = Time2Vec(
+                    time_emb_dim=config.emb_t2v_app_dim, freq=config.freq
+                )
+            elif config.t_embed == "time2vec_add":
+                self.temporal_embedding = Time2Vec(
+                    time_emb_dim=self.enc_in, freq=config.freq
+                )
+            else:
+                raise Exception(
+                    "The only options for t_embed with mlp are null and time2vec_app"
+                )
+
         # batch_first=True causes input/output tensors to be of shape
         # (batch_dim, seq_dim, feature_dim)
         self.lstm = nn.LSTM(
-            input_size=config.enc_in,
+            input_size=self.enc_in,
             hidden_size=config.d_model,
             num_layers=config.e_layers,
             batch_first=True,
@@ -29,7 +53,15 @@ class LSTM(nn.Module):
         # Readout layer
         self.fc = nn.Linear(config.d_ff, config.c_out)
 
-    def forward(self, x, *args, **kwargs):
+    def forward(self, x, x_mark, *args, **kwargs):
+        if self.t_embed is not None:
+            if self.t_embed == "time2vec_app":
+                time_emb = self.temporal_embedding(x_mark)
+                x = torch.concat([x, time_emb], dim=-1)
+            elif self.t_embed == "time2vec_add":
+                time_emb = self.temporal_embedding(x_mark)
+                x = x + time_emb
+
         # Initialize hidden state with zeros
         h0 = torch.zeros(self.e_layers, x.size(0), self.d_model).to(x)
 

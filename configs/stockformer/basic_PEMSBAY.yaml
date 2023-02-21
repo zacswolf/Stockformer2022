@@ -13,320 +13,320 @@ cols:
 - 400059_logpctchange
 - 400065_logpctchange
 - 400069_logpctchange
-# - 400073_logpctchange
-# - 400084_logpctchange
-# - 400085_logpctchange
-# - 400088_logpctchange
-# - 400096_logpctchange
-# - 400097_logpctchange
-# - 400100_logpctchange
-# - 400104_logpctchange
-# - 400109_logpctchange
-# - 400122_logpctchange
-# - 400147_logpctchange
-# - 400148_logpctchange
-# - 400149_logpctchange
-# - 400158_logpctchange
-# - 400160_logpctchange
-# - 400168_logpctchange
-# - 400172_logpctchange
-# - 400174_logpctchange
-# - 400178_logpctchange
-# - 400185_logpctchange
-# - 400201_logpctchange
-# - 400206_logpctchange
-# - 400209_logpctchange
-# - 400213_logpctchange
-# - 400221_logpctchange
-# - 400222_logpctchange
-# - 400227_logpctchange
-# - 400236_logpctchange
-# - 400238_logpctchange
-# - 400240_logpctchange
-# - 400246_logpctchange
-# - 400253_logpctchange
-# - 400257_logpctchange
-# - 400258_logpctchange
-# - 400268_logpctchange
-# - 400274_logpctchange
-# - 400278_logpctchange
-# - 400280_logpctchange
-# - 400292_logpctchange
-# - 400296_logpctchange
-# - 400298_logpctchange
-# - 400330_logpctchange
-# - 400336_logpctchange
-# - 400343_logpctchange
-# - 400353_logpctchange
-# - 400372_logpctchange
-# - 400394_logpctchange
-# - 400400_logpctchange
-# - 400414_logpctchange
-# - 400418_logpctchange
-# - 400429_logpctchange
-# - 400435_logpctchange
-# - 400436_logpctchange
-# - 400440_logpctchange
-# - 400449_logpctchange
-# - 400457_logpctchange
-# - 400461_logpctchange
-# - 400464_logpctchange
-# - 400479_logpctchange
-# - 400485_logpctchange
-# - 400499_logpctchange
-# - 400507_logpctchange
-# - 400508_logpctchange
-# - 400514_logpctchange
-# - 400519_logpctchange
-# - 400528_logpctchange
-# - 400545_logpctchange
-# - 400560_logpctchange
-# - 400563_logpctchange
-# - 400567_logpctchange
-# - 400581_logpctchange
-# - 400582_logpctchange
-# - 400586_logpctchange
-# - 400637_logpctchange
-# - 400643_logpctchange
-# - 400648_logpctchange
-# - 400649_logpctchange
-# - 400654_logpctchange
-# - 400664_logpctchange
-# - 400665_logpctchange
-# - 400668_logpctchange
-# - 400673_logpctchange
-# - 400677_logpctchange
-# - 400687_logpctchange
-# - 400688_logpctchange
-# - 400690_logpctchange
-# - 400700_logpctchange
-# - 400709_logpctchange
-# - 400713_logpctchange
-# - 400714_logpctchange
-# - 400715_logpctchange
-# - 400717_logpctchange
-# - 400723_logpctchange
-# - 400743_logpctchange
-# - 400750_logpctchange
-# - 400760_logpctchange
-# - 400772_logpctchange
-# - 400790_logpctchange
-# - 400792_logpctchange
-# - 400794_logpctchange
-# - 400799_logpctchange
-# - 400804_logpctchange
-# - 400822_logpctchange
-# - 400823_logpctchange
-# - 400828_logpctchange
-# - 400832_logpctchange
-# - 400837_logpctchange
-# - 400842_logpctchange
-# - 400863_logpctchange
-# - 400869_logpctchange
-# - 400873_logpctchange
-# - 400895_logpctchange
-# - 400904_logpctchange
-# - 400907_logpctchange
-# - 400911_logpctchange
-# - 400916_logpctchange
-# - 400922_logpctchange
-# - 400934_logpctchange
-# - 400951_logpctchange
-# - 400952_logpctchange
-# - 400953_logpctchange
-# - 400964_logpctchange
-# - 400965_logpctchange
-# - 400970_logpctchange
-# - 400971_logpctchange
-# - 400973_logpctchange
-# - 400995_logpctchange
-# - 400996_logpctchange
-# - 401014_logpctchange
-# - 401129_logpctchange
-# - 401154_logpctchange
-# - 401163_logpctchange
-# - 401167_logpctchange
-# - 401210_logpctchange
-# - 401224_logpctchange
-# - 401327_logpctchange
-# - 401351_logpctchange
-# - 401388_logpctchange
-# - 401391_logpctchange
-# - 401400_logpctchange
-# - 401403_logpctchange
-# - 401440_logpctchange
-# - 401457_logpctchange
-# - 401464_logpctchange
-# - 401489_logpctchange
-# - 401495_logpctchange
-# - 401507_logpctchange
-# - 401534_logpctchange
-# - 401541_logpctchange
-# - 401555_logpctchange
-# - 401560_logpctchange
-# - 401567_logpctchange
-# - 401597_logpctchange
-# - 401606_logpctchange
-# - 401611_logpctchange
-# - 401655_logpctchange
-# - 401808_logpctchange
-# - 401809_logpctchange
-# - 401810_logpctchange
-# - 401811_logpctchange
-# - 401816_logpctchange
-# - 401817_logpctchange
-# - 401845_logpctchange
-# - 401846_logpctchange
-# - 401890_logpctchange
-# - 401891_logpctchange
-# - 401906_logpctchange
-# - 401908_logpctchange
-# - 401926_logpctchange
-# - 401936_logpctchange
-# - 401937_logpctchange
-# - 401942_logpctchange
-# - 401943_logpctchange
-# - 401948_logpctchange
-# - 401957_logpctchange
-# - 401958_logpctchange
-# - 401994_logpctchange
-# - 401996_logpctchange
-# - 401997_logpctchange
-# - 401998_logpctchange
-# - 402056_logpctchange
-# - 402057_logpctchange
-# - 402058_logpctchange
-# - 402059_logpctchange
-# - 402060_logpctchange
-# - 402061_logpctchange
-# - 402067_logpctchange
-# - 402117_logpctchange
-# - 402118_logpctchange
-# - 402119_logpctchange
-# - 402120_logpctchange
-# - 402121_logpctchange
-# - 402281_logpctchange
-# - 402282_logpctchange
-# - 402283_logpctchange
-# - 402284_logpctchange
-# - 402285_logpctchange
-# - 402286_logpctchange
-# - 402287_logpctchange
-# - 402288_logpctchange
-# - 402289_logpctchange
-# - 402359_logpctchange
-# - 402360_logpctchange
-# - 402361_logpctchange
-# - 402362_logpctchange
-# - 402363_logpctchange
-# - 402364_logpctchange
-# - 402365_logpctchange
-# - 402366_logpctchange
-# - 402367_logpctchange
-# - 402368_logpctchange
-# - 402369_logpctchange
-# - 402370_logpctchange
-# - 402371_logpctchange
-# - 402372_logpctchange
-# - 402373_logpctchange
-# - 403225_logpctchange
-# - 403265_logpctchange
-# - 403329_logpctchange
-# - 403401_logpctchange
-# - 403402_logpctchange
-# - 403404_logpctchange
-# - 403406_logpctchange
-# - 403409_logpctchange
-# - 403412_logpctchange
-# - 403414_logpctchange
-# - 403419_logpctchange
-# - 404370_logpctchange
-# - 404434_logpctchange
-# - 404435_logpctchange
-# - 404444_logpctchange
-# - 404451_logpctchange
-# - 404452_logpctchange
-# - 404453_logpctchange
-# - 404461_logpctchange
-# - 404462_logpctchange
-# - 404521_logpctchange
-# - 404522_logpctchange
-# - 404553_logpctchange
-# - 404554_logpctchange
-# - 404585_logpctchange
-# - 404586_logpctchange
-# - 404640_logpctchange
-# - 404753_logpctchange
-# - 404759_logpctchange
-# - 405613_logpctchange
-# - 405619_logpctchange
-# - 405701_logpctchange
-# - 407150_logpctchange
-# - 407151_logpctchange
-# - 407152_logpctchange
-# - 407153_logpctchange
-# - 407155_logpctchange
-# - 407157_logpctchange
-# - 407161_logpctchange
-# - 407165_logpctchange
-# - 407172_logpctchange
-# - 407173_logpctchange
-# - 407174_logpctchange
-# - 407176_logpctchange
-# - 407177_logpctchange
-# - 407179_logpctchange
-# - 407180_logpctchange
-# - 407181_logpctchange
-# - 407184_logpctchange
-# - 407185_logpctchange
-# - 407186_logpctchange
-# - 407187_logpctchange
-# - 407190_logpctchange
-# - 407191_logpctchange
-# - 407194_logpctchange
-# - 407200_logpctchange
-# - 407202_logpctchange
-# - 407204_logpctchange
-# - 407206_logpctchange
-# - 407207_logpctchange
-# - 407321_logpctchange
-# - 407323_logpctchange
-# - 407325_logpctchange
-# - 407328_logpctchange
-# - 407331_logpctchange
-# - 407332_logpctchange
-# - 407335_logpctchange
-# - 407336_logpctchange
-# - 407337_logpctchange
-# - 407339_logpctchange
-# - 407341_logpctchange
-# - 407342_logpctchange
-# - 407344_logpctchange
-# - 407348_logpctchange
-# - 407352_logpctchange
-# - 407359_logpctchange
-# - 407360_logpctchange
-# - 407361_logpctchange
-# - 407364_logpctchange
-# - 407367_logpctchange
-# - 407370_logpctchange
-# - 407372_logpctchange
-# - 407373_logpctchange
-# - 407374_logpctchange
-# - 407710_logpctchange
-# - 407711_logpctchange
-# - 408907_logpctchange
-# - 408911_logpctchange
-# - 409524_logpctchange
-# - 409525_logpctchange
-# - 409526_logpctchange
-# - 409528_logpctchange
-# - 409529_logpctchange
-# - 413026_logpctchange
-# - 413845_logpctchange
-# - 413877_logpctchange
-# - 413878_logpctchange
-# - 414284_logpctchange
+- 400073_logpctchange
+- 400084_logpctchange
+- 400085_logpctchange
+- 400088_logpctchange
+- 400096_logpctchange
+- 400097_logpctchange
+- 400100_logpctchange
+- 400104_logpctchange
+- 400109_logpctchange
+- 400122_logpctchange
+- 400147_logpctchange
+- 400148_logpctchange
+- 400149_logpctchange
+- 400158_logpctchange
+- 400160_logpctchange
+- 400168_logpctchange
+- 400172_logpctchange
+- 400174_logpctchange
+- 400178_logpctchange
+- 400185_logpctchange
+- 400201_logpctchange
+- 400206_logpctchange
+- 400209_logpctchange
+- 400213_logpctchange
+- 400221_logpctchange
+- 400222_logpctchange
+- 400227_logpctchange
+- 400236_logpctchange
+- 400238_logpctchange
+- 400240_logpctchange
+- 400246_logpctchange
+- 400253_logpctchange
+- 400257_logpctchange
+- 400258_logpctchange
+- 400268_logpctchange
+- 400274_logpctchange
+- 400278_logpctchange
+- 400280_logpctchange
+- 400292_logpctchange
+- 400296_logpctchange
+- 400298_logpctchange
+- 400330_logpctchange
+- 400336_logpctchange
+- 400343_logpctchange
+- 400353_logpctchange
+- 400372_logpctchange
+- 400394_logpctchange
+- 400400_logpctchange
+- 400414_logpctchange
+- 400418_logpctchange
+- 400429_logpctchange
+- 400435_logpctchange
+- 400436_logpctchange
+- 400440_logpctchange
+- 400449_logpctchange
+- 400457_logpctchange
+- 400461_logpctchange
+- 400464_logpctchange
+- 400479_logpctchange
+- 400485_logpctchange
+- 400499_logpctchange
+- 400507_logpctchange
+- 400508_logpctchange
+- 400514_logpctchange
+- 400519_logpctchange
+- 400528_logpctchange
+- 400545_logpctchange
+- 400560_logpctchange
+- 400563_logpctchange
+- 400567_logpctchange
+- 400581_logpctchange
+- 400582_logpctchange
+- 400586_logpctchange
+- 400637_logpctchange
+- 400643_logpctchange
+- 400648_logpctchange
+- 400649_logpctchange
+- 400654_logpctchange
+- 400664_logpctchange
+- 400665_logpctchange
+- 400668_logpctchange
+- 400673_logpctchange
+- 400677_logpctchange
+- 400687_logpctchange
+- 400688_logpctchange
+- 400690_logpctchange
+- 400700_logpctchange
+- 400709_logpctchange
+- 400713_logpctchange
+- 400714_logpctchange
+- 400715_logpctchange
+- 400717_logpctchange
+- 400723_logpctchange
+- 400743_logpctchange
+- 400750_logpctchange
+- 400760_logpctchange
+- 400772_logpctchange
+- 400790_logpctchange
+- 400792_logpctchange
+- 400794_logpctchange
+- 400799_logpctchange
+- 400804_logpctchange
+- 400822_logpctchange
+- 400823_logpctchange
+- 400828_logpctchange
+- 400832_logpctchange
+- 400837_logpctchange
+- 400842_logpctchange
+- 400863_logpctchange
+- 400869_logpctchange
+- 400873_logpctchange
+- 400895_logpctchange
+- 400904_logpctchange
+- 400907_logpctchange
+- 400911_logpctchange
+- 400916_logpctchange
+- 400922_logpctchange
+- 400934_logpctchange
+- 400951_logpctchange
+- 400952_logpctchange
+- 400953_logpctchange
+- 400964_logpctchange
+- 400965_logpctchange
+- 400970_logpctchange
+- 400971_logpctchange
+- 400973_logpctchange
+- 400995_logpctchange
+- 400996_logpctchange
+- 401014_logpctchange
+- 401129_logpctchange
+- 401154_logpctchange
+- 401163_logpctchange
+- 401167_logpctchange
+- 401210_logpctchange
+- 401224_logpctchange
+- 401327_logpctchange
+- 401351_logpctchange
+- 401388_logpctchange
+- 401391_logpctchange
+- 401400_logpctchange
+- 401403_logpctchange
+- 401440_logpctchange
+- 401457_logpctchange
+- 401464_logpctchange
+- 401489_logpctchange
+- 401495_logpctchange
+- 401507_logpctchange
+- 401534_logpctchange
+- 401541_logpctchange
+- 401555_logpctchange
+- 401560_logpctchange
+- 401567_logpctchange
+- 401597_logpctchange
+- 401606_logpctchange
+- 401611_logpctchange
+- 401655_logpctchange
+- 401808_logpctchange
+- 401809_logpctchange
+- 401810_logpctchange
+- 401811_logpctchange
+- 401816_logpctchange
+- 401817_logpctchange
+- 401845_logpctchange
+- 401846_logpctchange
+- 401890_logpctchange
+- 401891_logpctchange
+- 401906_logpctchange
+- 401908_logpctchange
+- 401926_logpctchange
+- 401936_logpctchange
+- 401937_logpctchange
+- 401942_logpctchange
+- 401943_logpctchange
+- 401948_logpctchange
+- 401957_logpctchange
+- 401958_logpctchange
+- 401994_logpctchange
+- 401996_logpctchange
+- 401997_logpctchange
+- 401998_logpctchange
+- 402056_logpctchange
+- 402057_logpctchange
+- 402058_logpctchange
+- 402059_logpctchange
+- 402060_logpctchange
+- 402061_logpctchange
+- 402067_logpctchange
+- 402117_logpctchange
+- 402118_logpctchange
+- 402119_logpctchange
+- 402120_logpctchange
+- 402121_logpctchange
+- 402281_logpctchange
+- 402282_logpctchange
+- 402283_logpctchange
+- 402284_logpctchange
+- 402285_logpctchange
+- 402286_logpctchange
+- 402287_logpctchange
+- 402288_logpctchange
+- 402289_logpctchange
+- 402359_logpctchange
+- 402360_logpctchange
+- 402361_logpctchange
+- 402362_logpctchange
+- 402363_logpctchange
+- 402364_logpctchange
+- 402365_logpctchange
+- 402366_logpctchange
+- 402367_logpctchange
+- 402368_logpctchange
+- 402369_logpctchange
+- 402370_logpctchange
+- 402371_logpctchange
+- 402372_logpctchange
+- 402373_logpctchange
+- 403225_logpctchange
+- 403265_logpctchange
+- 403329_logpctchange
+- 403401_logpctchange
+- 403402_logpctchange
+- 403404_logpctchange
+- 403406_logpctchange
+- 403409_logpctchange
+- 403412_logpctchange
+- 403414_logpctchange
+- 403419_logpctchange
+- 404370_logpctchange
+- 404434_logpctchange
+- 404435_logpctchange
+- 404444_logpctchange
+- 404451_logpctchange
+- 404452_logpctchange
+- 404453_logpctchange
+- 404461_logpctchange
+- 404462_logpctchange
+- 404521_logpctchange
+- 404522_logpctchange
+- 404553_logpctchange
+- 404554_logpctchange
+- 404585_logpctchange
+- 404586_logpctchange
+- 404640_logpctchange
+- 404753_logpctchange
+- 404759_logpctchange
+- 405613_logpctchange
+- 405619_logpctchange
+- 405701_logpctchange
+- 407150_logpctchange
+- 407151_logpctchange
+- 407152_logpctchange
+- 407153_logpctchange
+- 407155_logpctchange
+- 407157_logpctchange
+- 407161_logpctchange
+- 407165_logpctchange
+- 407172_logpctchange
+- 407173_logpctchange
+- 407174_logpctchange
+- 407176_logpctchange
+- 407177_logpctchange
+- 407179_logpctchange
+- 407180_logpctchange
+- 407181_logpctchange
+- 407184_logpctchange
+- 407185_logpctchange
+- 407186_logpctchange
+- 407187_logpctchange
+- 407190_logpctchange
+- 407191_logpctchange
+- 407194_logpctchange
+- 407200_logpctchange
+- 407202_logpctchange
+- 407204_logpctchange
+- 407206_logpctchange
+- 407207_logpctchange
+- 407321_logpctchange
+- 407323_logpctchange
+- 407325_logpctchange
+- 407328_logpctchange
+- 407331_logpctchange
+- 407332_logpctchange
+- 407335_logpctchange
+- 407336_logpctchange
+- 407337_logpctchange
+- 407339_logpctchange
+- 407341_logpctchange
+- 407342_logpctchange
+- 407344_logpctchange
+- 407348_logpctchange
+- 407352_logpctchange
+- 407359_logpctchange
+- 407360_logpctchange
+- 407361_logpctchange
+- 407364_logpctchange
+- 407367_logpctchange
+- 407370_logpctchange
+- 407372_logpctchange
+- 407373_logpctchange
+- 407374_logpctchange
+- 407710_logpctchange
+- 407711_logpctchange
+- 408907_logpctchange
+- 408911_logpctchange
+- 409524_logpctchange
+- 409525_logpctchange
+- 409526_logpctchange
+- 409528_logpctchange
+- 409529_logpctchange
+- 413026_logpctchange
+- 413845_logpctchange
+- 413877_logpctchange
+- 413878_logpctchange
+- 414284_logpctchange
 # - 414694_logpctchange
 d_ff: 4096 #2048
 d_model: 512
@@ -334,14 +334,14 @@ data_path: PEMSBAY.csv
 # date_end: '2020-01-01'
 # date_start: '2012-01-01'
 # date_test: '2019-06-01'
-des: full_1h
+des: stockPEMS
 distil: false
 dont_shuffle_train: false
 dropout: 0.5
-dropout_emb: 0.05
-e_layers: 3
+dropout_emb: 0.0
+e_layers: 4
 emb_t2v_app_dim: 16
-enc_in: 10
+enc_in: 325
 factor: 5
 features: MS
 final_mode: mode3
@@ -363,11 +363,12 @@ optim: Adam #Ranger
 output_attention: false
 patience: 1000
 pred_len: 1
-pre_loss: stock_tanhv4
-pre_epochs: 15
+pre_loss: null
+pre_epochs: 0
 root_path: ./data/other/
 scale: true
 seed: 2
-seq_len: 32
-t_embed: time2vec_add
+seq_len: 16
+t_embed: null
+tok_emb: default
 target: 400001_logpctchange

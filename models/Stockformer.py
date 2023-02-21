@@ -28,6 +28,7 @@ class Stockformer(nn.Module):
             config.freq,
             config.dropout_emb,
             emb_t2v_app_dim=config.emb_t2v_app_dim,
+            tok_emb=config.tok_emb,
         )
         # Attention
         Attn = ProbAttention if config.attn == "prob" else FullAttention

@@ -49,6 +49,16 @@ class TokenEmbedding(nn.Module):
         return x
 
 
+class TokenEmbeddingBasic(nn.Module):
+    def __init__(self, c_in, d_model):
+        super(TokenEmbeddingBasic, self).__init__()
+        self.linear = nn.Linear(c_in, d_model)
+
+    def forward(self, x):
+        x = self.linear(x)
+        return x
+
+
 class FixedEmbedding(nn.Module):
     def __init__(self, c_in, d_model):
         super(FixedEmbedding, self).__init__()
@@ -146,6 +156,7 @@ class DataEmbedding(nn.Module):
         dropout_emb=0.01,
         position_embedding=True,
         emb_t2v_app_dim=32,
+        tok_emb="default",
     ):
         super(DataEmbedding, self).__init__()
 
@@ -184,7 +195,17 @@ class DataEmbedding(nn.Module):
         else:
             self.temporal_embedding = lambda _: 0
 
-        self.value_embedding = TokenEmbedding(c_in=c_in, d_model=d_model)
+        # For the value embedding
+        if tok_emb == "basic":
+            self.value_embedding = TokenEmbeddingBasic(c_in=c_in, d_model=d_model)
+        elif tok_emb == "raw":
+            self.value_embedding = lambda x: x
+            assert c_in == d_model, "c_in and d_model must be equal for raw embedding"
+            assert (
+                t_embed != "time2vec_app"
+            ), "time2vec_app not supported for raw embedding"
+        else:
+            self.value_embedding = TokenEmbedding(c_in=c_in, d_model=d_model)
 
         self.position_embedding = (
             PositionalEmbedding(d_model=d_model) if position_embedding else lambda x: 0

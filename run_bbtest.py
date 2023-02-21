@@ -155,7 +155,7 @@ def run_bbtest(
 
 
 if __name__ == "__main__":
-    config_file = "configs/lstm/basic_PEMSBAY.yaml"
+    config_file = "configs/stockformer/basic_PEMSBAY.yaml"
 
     # The duration of the test set, also the duration we slide with
     test_duration = relativedelta(months=1)
