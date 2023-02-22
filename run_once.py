@@ -1,9 +1,15 @@
 """
 This will train one model given a config
 """
-import json
 import os
+import json
+import yaml
 from pprint import pprint
+
+import torch
+torch.set_float32_matmul_precision('medium')
+
+import pytorch_lightning as pl
 from pytorch_lightning.callbacks import (
     EarlyStopping,
     ModelCheckpoint,
@@ -11,16 +17,15 @@ from pytorch_lightning.callbacks import (
     StochasticWeightAveraging,
     LearningRateMonitor,
 )
-import yaml
-from utils.callbacks import PredTrueDateWriter
 from pytorch_lightning.loggers import TensorBoardLogger
 from data_provider.data_module import CustomDataModule
 from exp.exp_timeseries import ExpTimeseries
+from utils.callbacks import PredTrueDateWriter
 from utils.results_analysis import get_metrics, open_results
 from utils.tools import dotdict
+from utils.ipynb_helpers import bbtest_setting, read_data
 
-from utils.ipynb_helpers import bbtest_setting, read_data, setting_from_args
-import pytorch_lightning as pl
+
 
 
 def pt_light_experiment(

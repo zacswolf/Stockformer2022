@@ -61,9 +61,8 @@ def open_results(
                 )
 
                 # Override trues with df target data to get original numerical precision
-                if (
-                    not ("mse" in args.loss and not args.inverse_output)
-                    and df is not None
+                if df is not None and not (
+                    "mse" in args.loss and not args.inverse_output
                 ):
                     print("OVERRIDING trues with df target")
                     df_data_group = df.loc[tpd_dict_tuple[data_group][2]]

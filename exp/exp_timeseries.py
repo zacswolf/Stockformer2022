@@ -1,4 +1,6 @@
 import torch
+
+torch.set_float32_matmul_precision("medium")
 import pytorch_lightning as pl
 
 from models.Basic import MLP
@@ -83,7 +85,7 @@ class ExpTimeseries(pl.LightningModule):
                 and self.config.inverse_pred
                 and self.config.inverse_output
             ), "Can't use mse loss without scale, inverse pred, and inverse output"
-            return MeanSquaredError()
+            return torch.nn.MSELoss()
         raise Exception(f"Invalid loss: {loss}")
 
     def forward(self, x):

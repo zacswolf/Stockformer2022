@@ -27,7 +27,10 @@ from utils.parallel import NoDaemonProcessPool
 LOG_BASE_DIR = "bbtest_logs"
 
 # Each element can be passed to the device param during the pytorch lightning trainer initialization
-GPU_LIST = list(map(lambda x: [x], range(8)))
+GPU_LIST = list(map(lambda x: [x], range(2)))
+NUM_PROC_PER_GPU = 1
+
+NUM_PROC = len(GPU_LIST) * NUM_PROC_PER_GPU
 
 
 def call_experiment(enumerated_args: list[tuple[int, dict, str]]):
@@ -35,7 +38,7 @@ def call_experiment(enumerated_args: list[tuple[int, dict, str]]):
     run_idx, args, setting = enumerated_args
     args = dotdict(args)
 
-    gpu_list_idx = current_process()._identity[0] - 1
+    gpu_list_idx = (current_process()._identity[0] - 1) % len(GPU_LIST)
 
     logger = TensorBoardLogger(
         LOG_BASE_DIR, name=setting, flush_secs=15, version=run_idx
@@ -84,11 +87,11 @@ def run_bbtest(
 
     # NOTE: the [-8:] should technically not be used here for a true bbtest
     # However, just having 1 batch of runs is way faster
-    inputs = [(idx, args, setting) for idx, args in enumerate(inputs)][-len(GPU_LIST) :]
+    inputs = [(idx, args, setting) for idx, args in enumerate(inputs)][-4:]
 
     df = read_data(os.path.join(args.root_path, args.data_path))
 
-    with NoDaemonProcessPool(processes=len(GPU_LIST)) as pool:
+    with NoDaemonProcessPool(processes=NUM_PROC) as pool:
         outputs = pool.map_async(call_experiment, inputs)
 
         # Open, Process, and Aggregate Test Data
