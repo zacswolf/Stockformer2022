@@ -26,8 +26,6 @@ from utils.tools import dotdict
 from utils.ipynb_helpers import bbtest_setting, read_data
 
 
-
-
 def pt_light_experiment(
     args: dotdict,
     devices: list[int] | str | int,
