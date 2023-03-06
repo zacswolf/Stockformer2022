@@ -1,6 +1,6 @@
 activation: gelu
 attn: full
-batch_size: 1024
+batch_size: 512
 c_out: 1
 cols:
 - 400001_logpctchange
@@ -350,14 +350,14 @@ freq: m
 inverse_output: false
 inverse_pred: true
 label_len: 0
-learning_rate: 1.0e-05
+learning_rate: 1.0e-04
 ln_mode: post
 loss: stock_tanhv1
-lradj: null
+lradj: type3
 max_epochs: 30
 mix: false
 model: stockformer
-n_heads: 12
+n_heads: 8
 no_early_stop: false
 no_scale_mean: true
 optim: Adam
@@ -369,7 +369,7 @@ pred_len: 1
 root_path: ./data/other/
 scale: true
 seed: 3
-seq_len: 256
-t_embed: null
+seq_len: 16
+t_embed: time2vec_add
 target: 400001_logpctchange
 tok_emb: default
