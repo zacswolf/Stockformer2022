@@ -8,7 +8,7 @@ from pprint import pprint
 
 import torch
 
-torch.set_float32_matmul_precision("medium")
+# torch.set_float32_matmul_precision("medium")
 
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import (
@@ -246,8 +246,8 @@ if __name__ == "__main__":
     # with open("configs/stockformer/example.yaml", "w") as file:
     #     yaml.dump(dict(args), file)
 
-    config_file = "configs/lstm/basic_PEMSBAY.yaml"
-    devices = [6]
+    config_file = "configs/spacetimeformer/basic_WTH.yaml"
+    devices = [7]
 
     with open(config_file, "r") as file:
         args = dotdict(yaml.full_load(file))

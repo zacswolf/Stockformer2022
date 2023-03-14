@@ -1,12 +1,13 @@
 import torch
 
-torch.set_float32_matmul_precision("medium")
+# torch.set_float32_matmul_precision("medium")
 import pytorch_lightning as pl
 
 from models.Basic import MLP
 from models.Lstm import LSTM
 from models.Informer import Informer, InformerStack
 from models.Stockformer import Stockformer
+from models.spacetimeformer.model import Spacetimeformer
 from utils.stock_metrics import get_stock_algo, pct_direction_torch
 from torchmetrics import MeanSquaredError, MeanAbsoluteError
 from pytorch_forecasting.optim import Ranger
@@ -40,6 +41,7 @@ class ExpTimeseries(pl.LightningModule):
             "mlp": MLP,
             "stockformer": Stockformer,
             "lstm": LSTM,
+            "spacetimeformer": Spacetimeformer,
         }
         assert (
             self.config.model in model_dict
@@ -269,7 +271,7 @@ class ExpTimeseries(pl.LightningModule):
         ds_index=None,
     ):
         # Decoder input if self.config.dec_in
-        dec_inp = None
+        dec_inp = batch_y  # None
         # if self.config.dec_in and (
         #     self.config.padding == 0 or self.config.padding == 1
         # ):
