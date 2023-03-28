@@ -40,7 +40,7 @@ learning_rate: 1.0e-04
 ln_mode: post
 loss: stock_tanhv1
 lradj: type3
-max_epochs: 30
+max_epochs: 160
 mix: false
 model: stockformer
 n_heads: 8

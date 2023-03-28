@@ -75,11 +75,11 @@ def apply_threshold_metric(output, other, threshold=0.0002):
 
 
 def pct_direction(output, pct_change):
-    return np.sum(np.sign(output) == np.sign(pct_change)) / len(pct_change)
+    return np.sum(np.sign(output) == np.sign(pct_change)) / pct_change.size
 
 
 def pct_direction_torch(output, pct_change):
-    return torch.sum(torch.sign(output) == torch.sign(pct_change)) / len(pct_change)
+    return torch.sum(torch.sign(output) == torch.sign(pct_change)) / pct_change.numel()
 
 
 class PctProfitDirection(StockAlgo):

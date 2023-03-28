@@ -24,7 +24,8 @@ class Spacetimeformer(nn.Module):
     def __init__(self, config):
         super().__init__()
         d_yc: int = config.enc_in
-        d_yt: int = config.enc_in
+        # Todo: d_yt is hard coded to just 1 target for now
+        d_yt: int = 1  # config.enc_in
         d_x: int = {"h": 4, "t": 5, "s": 6, "m": 1, "a": 1, "w": 2, "d": 3, "b": 3}[
             config.freq
         ]
@@ -56,7 +57,7 @@ class Spacetimeformer(nn.Module):
         use_shifted_time_windows: bool = True
         embed_method: str = "spatio-temporal"
         activation: str = "gelu"
-        norm: str = "batch"
+        norm: str = config.norm
         use_final_norm: bool = True
         initial_downsample_convs: int = 0
         intermediate_downsample_convs: int = 0
@@ -283,6 +284,9 @@ class Spacetimeformer(nn.Module):
             self_mask_seq=enc_mask_seq,
             output_attn=output_attention,
         )
+
+        # Make sure we are not leaking the future
+        dec_y = torch.zeros_like(dec_y).to(dec_y)
 
         # embed target sequence
         dec_vt_emb, dec_s_emb, _, dec_mask_seq = self.dec_embedding(y=dec_y, x=dec_x)

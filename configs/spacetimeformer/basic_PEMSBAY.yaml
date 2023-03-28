@@ -360,6 +360,7 @@ model: spacetimeformer
 n_heads: 8
 no_early_stop: false
 no_scale_mean: true
+norm: batch
 optim: Adam
 output_attention: false
 patience: 1000

@@ -8,6 +8,7 @@ from models.Lstm import LSTM
 from models.Informer import Informer, InformerStack
 from models.Stockformer import Stockformer
 from models.spacetimeformer.model import Spacetimeformer
+from models.spacetimeformer.stockspacetimeformer import StockSpacetimeformer
 from utils.stock_metrics import get_stock_algo, pct_direction_torch
 from torchmetrics import MeanSquaredError, MeanAbsoluteError
 from pytorch_forecasting.optim import Ranger
@@ -42,6 +43,7 @@ class ExpTimeseries(pl.LightningModule):
             "stockformer": Stockformer,
             "lstm": LSTM,
             "spacetimeformer": Spacetimeformer,
+            "stockspacetimeformer": StockSpacetimeformer,
         }
         assert (
             self.config.model in model_dict
@@ -50,7 +52,19 @@ class ExpTimeseries(pl.LightningModule):
 
         # Load model
         if self.config.load_model_path is not None:
-            self.load_from_checkpoint(self.config.load_model_path)
+            # self.save_hyperparameters(logger=False)
+            # p = self.config.load_model_path
+            # self.config.load_model_path = None
+            # self.load_from_checkpoint(p, config=self.config)
+
+            # self.model.load_state_dict(checkpoint["state_dict"])
+            checkpoint = torch.load(self.config.load_model_path)
+            self.model.load_state_dict(
+                {
+                    k.replace("model.", ""): v
+                    for k, v in checkpoint["state_dict"].items()
+                }
+            )
 
     def _select_criterion(self, loss_override=None):
         loss = self.config.loss
@@ -286,6 +300,10 @@ class ExpTimeseries(pl.LightningModule):
         #         .to(self.device)
         #     )
 
+        if self.config.model == "spacetimeformer":
+            # The last feature is target
+            dec_inp = batch_y[:, :, -1:]
+
         # Encoder - Decoder
         if self.config.output_attention:
             outputs = self.model(batch_x, batch_x_mark, dec_inp, batch_y_mark)[0]
@@ -312,6 +330,8 @@ class ExpTimeseries(pl.LightningModule):
             optimizer = torch.optim.AdamW(self.parameters(), lr=self.learning_rate)
         elif self.config.optim == "Ranger":
             optimizer = Ranger(self.parameters(), lr=self.learning_rate)
+        elif self.config.optim == "RAdam":
+            optimizer = torch.optim.RAdam(self.parameters(), lr=self.learning_rate)
         else:
             optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
         # optimizer = torch.optim.SGD(self.parameters(), lr=self.learning_rate)
