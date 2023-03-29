@@ -82,6 +82,7 @@ class Embedding(nn.Module):
         use_time: bool = True,
         use_space: bool = True,
         use_given: bool = True,
+        question_masking: int = 0,
     ):
         super().__init__()
 
@@ -215,7 +216,6 @@ class Embedding(nn.Module):
 
         # position emb ("local_emb")
         local_pos = repeat(
-            # torch.arange(length).to(x.device), f"length -> {batch} ({dy} length)"
             torch.arange(length).to(x),
             f"length -> {batch} ({dy} length)",
         )
@@ -252,32 +252,32 @@ class Embedding(nn.Module):
         val_time_inp = torch.cat((time_emb, y), dim=-1)
         val_time_emb = self.val_time_emb(val_time_inp)
 
-        # "given" embedding
-        if self.use_given:
-            given = torch.ones((batch, length, dy)).long().to(x.device)  # start as True
-            if not self.is_encoder:
-                # mask missing values that need prediction...
-                given[:, self.start_token_len :, :] = 0  # (False)
+        # # "given" embedding
+        # if self.use_given:
+        #     given = torch.ones((batch, length, dy)).long().to(x.device)  # start as True
+        #     if not self.is_encoder:
+        #         # mask missing values that need prediction...
+        #         given[:, self.start_token_len :, :] = 0  # (False)
 
-            # if y was NaN, set Given = False
-            given *= ~true_null
+        #     # if y was NaN, set Given = False
+        #     given *= ~true_null
 
-            # flatten now to make the rest easier to figure out
-            given = rearrange(given, "batch len dy -> batch (dy len)")
+        #     # flatten now to make the rest easier to figure out
+        #     given = rearrange(given, "batch len dy -> batch (dy len)")
 
-            # use given embeddings to identify data that was dropped out
-            given *= (y == y_original).squeeze(-1)
+        #     # use given embeddings to identify data that was dropped out
+        #     given *= (y == y_original).squeeze(-1)
 
-            if self.null_value is not None:
-                # mask null values that were set to a magic number in the dataset itself
-                null_mask = (y != self.null_value).squeeze(-1)
-                given *= null_mask
+        #     if self.null_value is not None:
+        #         # mask null values that were set to a magic number in the dataset itself
+        #         null_mask = (y != self.null_value).squeeze(-1)
+        #         given *= null_mask
 
-            given_emb = self.given_emb(given)
-        else:
-            given_emb = 0.0
+        #     given_emb = self.given_emb(given)
+        # else:
+        #     given_emb = 0.0
 
-        val_time_emb = local_emb + val_time_emb + given_emb
+        val_time_emb = local_emb + val_time_emb  # + given_emb
 
         if self.is_encoder:
             for conv in self.downsize_convs:
