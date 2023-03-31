@@ -2,12 +2,7 @@ import numpy as np
 import pandas as pd
 
 from torch.utils.data import Dataset, DataLoader
-from data_provider.data_loader import (
-    Dataset_Custom,
-    Dataset_Pred,
-    # Dataset_ETT_hour,
-    # Dataset_ETT_minute,
-)
+from data_provider.data_loader import create_datasets
 from utils.tools import dotdict
 import pytorch_lightning as pl
 
@@ -39,9 +34,7 @@ class CustomDataModule(pl.LightningDataModule):
         The `stage` can be used to differentiate whether it's called before trainer.fit()` or `trainer.test()`.
         """
 
-        self.data_train = Dataset_Custom(self.config, flag="train")
-        self.data_val = Dataset_Custom(self.config, flag="val")
-        self.data_test = Dataset_Custom(self.config, flag="test")
+        self.data_train, self.data_val, self.data_test = create_datasets(self.config)
         # self.data_pred = Dataset_Pred(self.config, flag="pred")
         print(
             f"LOADED DATASETS for {stage}: train: {len(self.data_train)}\tval: {len(self.data_val)}\ttest: {len(self.data_test)}"

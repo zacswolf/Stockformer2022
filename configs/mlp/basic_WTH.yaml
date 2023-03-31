@@ -2,19 +2,21 @@ activation: gelu
 attn: full
 batch_size: 256
 c_out: 1
-cols:
-- Visibility_logpctchange
-- DryBulbFarenheit_logpctchange
-- DryBulbCelsius_logpctchange
-- WetBulbFarenheit_logpctchange
-- DewPointFarenheit_logpctchange
-- DewPointCelsius_logpctchange
-- RelativeHumidity_logpctchange
-- WindSpeed_logpctchange
-- WindDirection_logpctchange
-- StationPressure_logpctchange
-- Altimeter_logpctchange
-- WetBulbCelsius_logpctchange
+tickers:
+- Visibility
+- DryBulbFarenheit
+- DryBulbCelsius
+- WetBulbFarenheit
+- DewPointFarenheit
+- DewPointCelsius
+- RelativeHumidity
+- WindSpeed
+- WindDirection
+- StationPressure
+- Altimeter
+- WetBulbCelsius
+traits:
+- logpctchange
 d_model: 256
 data_path: WTH.csv
 # date_end: '2020-01-01'

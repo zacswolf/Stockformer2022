@@ -2,19 +2,21 @@ activation: gelu
 attn: full
 batch_size: 256
 c_out: 1
-cols:
-- Visibility_logpctchange
-- DryBulbFarenheit_logpctchange
-- DryBulbCelsius_logpctchange
-- WetBulbFarenheit_logpctchange
-- DewPointFarenheit_logpctchange
-- DewPointCelsius_logpctchange
-- RelativeHumidity_logpctchange
-- WindSpeed_logpctchange
-- WindDirection_logpctchange
-- StationPressure_logpctchange
-- Altimeter_logpctchange
-- WetBulbCelsius_logpctchange
+tickers:
+- Visibility
+- DryBulbFarenheit
+- DryBulbCelsius
+- WetBulbFarenheit
+- DewPointFarenheit
+- DewPointCelsius
+- RelativeHumidity
+- WindSpeed
+- WindDirection
+- StationPressure
+- Altimeter
+- WetBulbCelsius
+traits:
+- logpctchange
 d_ff: 800
 d_model: 200
 data_path: WTH.csv
@@ -24,7 +26,7 @@ data_path: WTH.csv
 des: HypOptStockWTH
 distil: false
 dont_shuffle_train: false
-dropout: 0.5
+dropout: 0.05
 dropout_emb: 0.1
 d_layers: 3
 e_layers: 2
@@ -40,7 +42,7 @@ label_len: 0
 learning_rate: 1.0e-04
 ln_mode: post
 loss: stock_tanhv1
-lradj: type3
+lradj: null #type3
 max_epochs: 30
 mix: false
 model: spacetimeformer
@@ -48,7 +50,7 @@ n_heads: 8
 no_early_stop: false
 no_scale_mean: true
 norm: batch
-optim: Adam
+optim: RAdam
 output_attention: false
 patience: 1000
 pre_epochs: 0
