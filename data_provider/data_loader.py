@@ -198,8 +198,8 @@ class DataInfo:
         """
         Read the raw data from a CSV file, preprocess it, and split it into train, validation, and test sets.
         """
-        # Initialize scaler and read data from CSV
-        self.scaler = StandardScaler()
+
+        # Read data from CSV
         df_raw = pd.read_csv(os.path.join(self.config.root_path, self.config.data_path))
         df_raw = df_raw.astype(
             {c: np.float32 for c in df_raw.select_dtypes(include="float64").columns}
@@ -232,7 +232,7 @@ class DataInfo:
         # Prepare timestamps and data
         df_stamp = df_processed[["date"]]
         df_stamp["date"] = pd.to_datetime(df_stamp.date)
-        self.raw_dates = df_stamp.date.to_numpy(dtype=np.datetime64)
+        raw_dates = df_stamp.date.to_numpy(dtype=np.datetime64)
         data_stamp = np.float32(
             time_features(df_stamp, timeenc=self.timeenc, freq=self.config.freq)
         )
@@ -250,23 +250,28 @@ class DataInfo:
 
         df_data = df_processed[df_processed.columns[1:]]
 
-        # Scale data if necessary
-        if self.config.scale:
-            train_start, train_end = self._compute_set_indices(
-                "train", len(df_processed), num_train, num_val, num_test
-            )
-            train_data = df_data[train_start:train_end]
-            self.scaler.fit(train_data.values, scale_mean=not self.config.no_scale_mean)
-            data = torch.from_numpy(self.scaler.transform(df_data.values))
-        else:
-            data = torch.from_numpy(df_data.values)
+        # # Scale data if necessary
+        # if self.config.scale:
+        #     train_start, train_end = self._compute_set_indices(
+        #         "train", len(df_processed), num_train, num_val, num_test
+        #     )
+        #     train_data = df_data[train_start:train_end]
+        #     self.scaler.fit(train_data.values, scale_mean=not self.config.no_scale_mean)
+        #     data = torch.from_numpy(self.scaler.transform(df_data.values))
+        # else:
+        #     data = torch.from_numpy(df_data.values)
+        scaled_data = self._scale_data(df_data, num_train, num_val, num_test)
 
         self.df_data = df_data
         self.num_train = num_train
         self.num_val = num_val
         self.num_test = num_test
-        self.data = data
+        self.scaled_data = scaled_data
         self.data_stamp = data_stamp
+        self.raw_dates = raw_dates
+        self.num_train = num_train
+        self.num_val = num_val
+        self.num_test = num_test
 
         # # Specific to the data set type below
         # start, end = self._compute_set_indices(
@@ -302,15 +307,16 @@ class DataInfo:
         )
 
         data_stamp = self.data_stamp[start:end]
+        raw_dates = self.raw_dates[start:end]
 
-        data_x = self.data[start:end]
+        data_x = self.scaled_data[start:end]
 
         if self.config.inverse_pred:
             data_y = torch.from_numpy(self.df_data.values[start:end])
         else:
-            data_y = self.data[start:end]
+            data_y = self.scaled_data[start:end]
 
-        return data_stamp, data_x, data_y
+        return data_stamp, raw_dates, data_x, data_y
 
     def _calculate_split_lengths(self, df_processed: pd.DataFrame):
         """
@@ -374,6 +380,71 @@ class DataInfo:
         else:  # Test set
             start, end = num_rows - num_test - self.config.seq_len, num_rows
         return start, end
+
+    def _scale_data(self, df_data: pd.DataFrame, num_train, num_val, num_test):
+        scale_method = 2
+
+        if not self.config.scale:
+            return torch.from_numpy(df_data.values)
+
+        train_start, train_end = self._compute_set_indices(
+            "train", len(df_data), num_train, num_val, num_test
+        )
+
+        # Don't modify original df_data
+        df_data = df_data.copy(deep=True)
+        train_data = df_data[train_start:train_end]
+
+        if scale_method == 2:
+            # Initialize scalars
+            self.scalers = {
+                f"{ticker}_{trait}": StandardScaler()
+                for ticker in self.tickers
+                for trait in self.traits
+            }
+
+            for ticker in self.tickers:
+                for trait in self.traits:
+                    column = f"{ticker}_{trait}"
+                    self.scalers[column].fit(
+                        train_data[column].values,
+                        scale_mean=not self.config.no_scale_mean,
+                    )
+                    df_data[column] = self.scalers[column].transform(
+                        df_data[column].values
+                    )
+
+            return torch.from_numpy(df_data.values)
+        else:  # scale_method == 2
+            self.scalar = StandardScaler()
+
+            train_data = df_data[train_start:train_end]
+            self.scaler.fit(train_data.values, scale_mean=not self.config.no_scale_mean)
+            return torch.from_numpy(self.scaler.transform(df_data.values))
+
+    def inverse_transform(self, data: np.ndarray):
+        if not self.config.scale:
+            return data
+
+        scale_method = 2
+        if scale_method == 2:
+            # Convert the data back to a DataFrame
+            columns = [
+                f"{ticker}_{trait}" for ticker in self.tickers for trait in self.traits
+            ]
+            df_data_ = pd.DataFrame(data, columns=columns)
+
+            # Inverse transform each (ticker, trait) pair individually
+            for ticker in self.tickers:
+                for trait in self.traits:
+                    column = f"{ticker}_{trait}"
+                    df_data_[column] = self.scalers[column].inverse_transform(
+                        df_data_[column].values
+                    )
+
+            return df_data_.values
+        else:  # scale_method == 2
+            return self.scalar.inverse_transform(data)
 
     # def __getitem__(self, index):
     #     s_begin = index
@@ -455,7 +526,12 @@ class DatasetCustom(Dataset):
         self.config = data_info.config
 
         # Set up specific properties for train, val, or test datasets using the provided data_info object
-        self.data_stamp, self.data_x, self.data_y = data_info.get_dataset_info(flag)
+        (
+            self.data_stamp,
+            self.raw_dates,
+            self.data_x,
+            self.data_y,
+        ) = data_info.get_dataset_info(flag)
 
     def __getitem__(self, index: int):
         """
@@ -540,7 +616,7 @@ class DatasetCustom(Dataset):
         Returns:
             numpy.ndarray: The data transformed back to its original scale.
         """
-        return self.data_info.scaler.inverse_transform(data)
+        return self.data_info.inverse_transform(data)
 
 
 # class Dataset_Pred(Dataset):
